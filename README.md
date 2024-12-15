@@ -34,7 +34,9 @@ The Password is: Pass@123
 
 <h4 align="center">Demo:</h4>
 <p align="center">
-  <img src="https://i.imgur.com/ECOh7dt.gif" height="1%" width="80%" alt="Disk Sanitization Steps"/>
+  Here, suppose I entered 3-digit password "jh6" as my user input, then... <br/>
+  <img src="https://i.imgur.com/ECOh7dt.gif" height="0%" width="45%" alt="Disk Sanitization Steps"/> <br/>
+  Note it only took a few senconds to crack the password.
 </p>
 
 
