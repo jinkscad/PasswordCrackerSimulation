@@ -19,16 +19,24 @@ The program prompts the user to input a password.
 It generates random combinations of characters until the correct password is found.
 This approach shows how inefficient brute force methods are against complex passwords.
 
-<h4>Example Usage:</h4>
+<h4 align="center">Example Usage:</h4>
 
-```bash
+<p align="center">
+  <pre>
+  <code>
 Enter a password (letters, numbers, and symbols only): Pass@123
 <==== Abc!xZ ====>
 <==== Pass@123 ====>
 The Password is: Pass@123
-```
-Demo:
-<img src="https://i.imgur.com/ECOh7dt.gif" height="15%" width="70%" alt="Disk Sanitization Steps"/>
+  </code>
+  </pre>
+</p>
+
+<h4 align="center">Demo:</h4>
+<p align="center">
+  <img src="https://i.imgur.com/ECOh7dt.gif" height="1%" width="80%" alt="Disk Sanitization Steps"/>
+</p>
+
 
 
 
