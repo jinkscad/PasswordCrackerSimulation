@@ -1,19 +1,20 @@
 # Password Cracker Simulation
 <h2>Description</h2>
-Project consists of a simple PowerShell script that walks the user through "zeroing out" (wiping) any drives that are connected to the system. The utility allows you to select the target disk and choose the number of passes that are performed. The PowerShell script will configure a diskpart script file based on the user's selections and then launch Diskpart to perform the disk sanitization.
+This project consists of two Python scripts that simulate password-cracking techniques: <b>Brute Force Attack</b> and <b>Dictionary Attack</b>. The purpose of the project is to demonstrate the vulnerabilities of short, simple, and common passwords, as well as highlight the importance of secure hashing algorithms.
 <br />
 
 
 <h2>Languages and Utilities Used</h2>
 
-- <b>Python</b> 
+- Python
 
 
 <h2>Environments Used </h2>
 
-- <b>macOS Sequoia 15.2 </b>
+- macOS Sequoia 15.2
 
 <h2>Program walk-through:</h2>
+<h3>Brute Force Attack Simulator:</h3>
 
 <p align="center">
 Launch the utility: <br/>
