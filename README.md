@@ -28,6 +28,7 @@ Enter a password (letters, numbers, and symbols only): Pass@123
 The Password is: Pass@123
 ```
 Demo:
+<img src="https://i.imgur.com/ECOh7dt.gif" height="15%" width="70%" alt="Disk Sanitization Steps"/>
 
 
 
@@ -36,7 +37,7 @@ The user provides a hashed password and a file containing a list of candidate pa
 The program hashes each word in the dictionary using the MD5 hashing algorithm and compares it to the given hash.
 The attack demonstrates how easily simple, common passwords can be cracked using pre-existing wordlists.
 
-<img src="https://imgur.com/ECOh7dt" height="80%" width="80%" alt="Disk Sanitization Steps"/>
+
 
 <!--
  ```diff
