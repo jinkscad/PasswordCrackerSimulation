@@ -55,9 +55,9 @@ Password found: test
 </p>
 <h4 align="center">Demo:</h4>
 <p align="center">
-  Here, suppose I entered 3-digit password "jh6" as my user input, then... <br/>
+  Here, desc, then... <br/>
   <img src="https://imgur.com/eJNJVB6.gif" height="80%" width="80%" alt="Disk Sanitization Steps"/> <br/>
-  Note it only took a few senconds to crack the password.
+  Desc
 </p>
 
  
