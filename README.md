@@ -15,8 +15,14 @@ This project consists of two Python scripts that simulate password-cracking tech
 
 <h2>Program walk-through:</h2>
 <h3>Brute Force Attack Password Crack Simulator:</h3>
+The program prompts the user to input a password.
+It generates random combinations of characters until the correct password is found.
+This approach shows how inefficient brute force methods are against complex passwords.
 
 <h3>Dictionary Attack Password Crack Simulator:</h3>
+The user provides a hashed password and a file containing a list of candidate passwords (dictionary).
+The program hashes each word in the dictionary using the MD5 hashing algorithm and compares it to the given hash.
+The attack demonstrates how easily simple, common passwords can be cracked using pre-existing wordlists.
 
 <p align="center">
 Launch the utility: <br/>
