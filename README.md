@@ -19,6 +19,18 @@ The program prompts the user to input a password.
 It generates random combinations of characters until the correct password is found.
 This approach shows how inefficient brute force methods are against complex passwords.
 
+<h4>Example Usage:</h4>
+
+```bash
+Enter a password (letters, numbers, and symbols only): Pass@123
+<==== Abc!xZ ====>
+<==== Pass@123 ====>
+The Password is: Pass@123
+```
+Demo:
+
+
+
 <h3>Dictionary Attack Password Crack Simulator:</h3>
 The user provides a hashed password and a file containing a list of candidate passwords (dictionary).
 The program hashes each word in the dictionary using the MD5 hashing algorithm and compares it to the given hash.
