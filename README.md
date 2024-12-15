@@ -14,7 +14,9 @@ This project consists of two Python scripts that simulate password-cracking tech
 - macOS Sequoia 15.2
 
 <h2>Program walk-through:</h2>
-<h3>Brute Force Attack Simulator:</h3>
+<h3>Brute Force Attack Password Crack Simulator:</h3>
+
+<h3>Dictionary Attack Password Crack Simulator:</h3>
 
 <p align="center">
 Launch the utility: <br/>
