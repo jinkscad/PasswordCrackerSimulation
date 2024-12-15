@@ -31,7 +31,6 @@ The Password is: Pass@123
   </code>
   </pre>
 </p>
-
 <h4 align="center">Demo:</h4>
 <p align="center">
   Here, suppose I entered 3-digit password "jh6" as my user input, then... <br/>
@@ -39,13 +38,21 @@ The Password is: Pass@123
   Note it only took a few senconds to crack the password.
 </p>
 
-
-
-
 <h3>Dictionary Attack Password Crack Simulator:</h3>
 The user provides a hashed password and a file containing a list of candidate passwords (dictionary).
 The program hashes each word in the dictionary using the MD5 hashing algorithm and compares it to the given hash.
 The attack demonstrates how easily simple, common passwords can be cracked using pre-existing wordlists.
+
+<h4 align="center">Example Usage:</h4>
+<p align="center">
+  <pre>
+  <code>
+Enter the hashed password: 098f6bcd4621d373cade4e832627b4f6
+Enter password filename including path: wordlist.txt
+Password found: test
+  </code>
+  </pre>
+</p>
 
 
 
