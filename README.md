@@ -57,7 +57,7 @@ Password found: test
 <p align="center">
   Here, I used a <a href="https://www.md5hashgenerator.com/" target="_blank">MD5 Hash Generator</a> to hash the password “sunshine” and input it as user prompt, then... <br/>
   <img src="https://imgur.com/eJNJVB6.gif" height="80%" width="80%" alt="Disk Sanitization Steps"/> <br/>
-  The password was cracked in an instant by entering the file (dictionary) where the password candidates are stored. This is much faster than Brute Force Attack
+  The password was cracked in an instant by entering the file (dictionary) where the password candidates are stored. This is much faster than Brute Force Attack. However, it is not possible to crack passwords that do not exist in the dictionary, i.e., passwords that are difficult to predict (e.g., random combinations of various numbers, symbols, letters, etc.).
 </p>
 
 <h2>Conclusion:</h2>
