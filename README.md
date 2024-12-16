@@ -35,7 +35,7 @@ The Password is: Pass@123
 <p align="center">
   Here, suppose I entered 3-digit password "jh6" as my user input, then... <br/>
   <img src="https://i.imgur.com/ECOh7dt.gif" height="10%" width="55%" alt="Disk Sanitization Steps"/> <br/>
-  Note it only took a few senconds to crack the password.
+  This password was three digits which is very short, so the program took only a few seconds to crack the password. However, the longer the password, the longer it takes to crack.  This demonstration emphasizes the importance of password length.
 </p>
 
 <h3>Dictionary Attack Password Crack Simulator:</h3>
@@ -55,11 +55,14 @@ Password found: test
 </p>
 <h4 align="center">Demo:</h4>
 <p align="center">
-  Here, I used the MD5 Hash Generator to hash the password “sunshine” and input it as user promput, then... <br/>
+  Here, I used a <a href="https://www.md5hashgenerator.com/" target="_blank">MD5 Hash Generator</a> to hash the password “sunshine” and input it as user prompt, then... <br/>
   <img src="https://imgur.com/eJNJVB6.gif" height="80%" width="80%" alt="Disk Sanitization Steps"/> <br/>
-  The password was cracked in an instant by entering the file (dictionary) where the password candidates are stored.
+  The password was cracked in an instant by entering the file (dictionary) where the password candidates are stored. This is much faster than Brute Force Attack
 </p>
 
+<h2>Conclusion:</h2>
+This project demonstrates the differences in efficiency between brute force and dictionary attacks. Brute force attacks, while exhaustive, are computationally expensive and impractical for complex passwords. In contrast, dictionary attacks leverage precompiled wordlists, making them much faster for cracking simple or common passwords.
+However, this project also highlights a critical limitation of using outdated hashing algorithms like MD5. Even though the passwords were hashed, the dictionary attack successfully cracked them by matching precomputed hash values. This underscores the importance of not only using strong, unique passwords but also employing modern, secure hashing algorithms like bcrypt or Argon2, which are designed to resist such attacks.
  
 
 <!--
