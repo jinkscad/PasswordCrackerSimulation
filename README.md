@@ -55,9 +55,9 @@ Password found: test
 </p>
 <h4 align="center">Demo:</h4>
 <p align="center">
-  Here, desc, then... <br/>
+  Here, I used the MD5 Hash Generator to hash the password “sunshine” and input it as user promput, then... <br/>
   <img src="https://imgur.com/eJNJVB6.gif" height="80%" width="80%" alt="Disk Sanitization Steps"/> <br/>
-  Desc
+  The password was cracked in an instant by entering the file (dictionary) where the password candidates are stored.
 </p>
 
  
