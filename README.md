@@ -13,7 +13,7 @@ This project consists of two Python scripts that simulate password-cracking tech
 
 - macOS Sequoia 15.2
 
-<h2>Program walk-through:</h2>
+<h2>Program walk-through</h2>
 <h3>Brute Force Attack Password Crack Simulator:</h3>
 The program prompts the user to input a password.
 It generates random combinations of characters until the correct password is found.
@@ -60,7 +60,7 @@ Password found: test
   The password was cracked in an instant by entering the file (dictionary) where the password candidates are stored. This is much faster than Brute Force Attack. However, it is not possible to crack passwords that do not exist in the dictionary, i.e., passwords that are difficult to predict (e.g., random combinations of various numbers, symbols, letters, etc.).
 </p>
 
-<h2>Conclusion:</h2>
+<h2>Conclusion</h2>
 This project demonstrates the differences in efficiency between brute force and dictionary attacks. Brute force attacks, while exhaustive, are computationally expensive and impractical for complex passwords. In contrast, dictionary attacks leverage precompiled wordlists, making them much faster for cracking simple or common passwords.
 However, this project also highlights a critical limitation of using outdated hashing algorithms like MD5. Even though the passwords were hashed, the dictionary attack successfully cracked them by matching precomputed hash values. This underscores the importance of not only using strong, unique passwords but also employing modern, secure hashing algorithms like bcrypt or Argon2, which are designed to resist such attacks.
  
