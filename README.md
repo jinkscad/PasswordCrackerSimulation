@@ -251,36 +251,6 @@ python main.py analyze --password "MySecureP@ssw0rd!"
 - ✅ Implement **rate limiting** on login attempts
 - ✅ Consider **multi-factor authentication (MFA)**
 
----
-
-## 📁 Project Structure
-
-```
-PasswordCrackerSimulation/
-├── app.py                          # Flask web application
-├── main.py                         # CLI entry point
-├── requirements.txt                # Python dependencies
-├── README.md                       # This file
-├── QUICKSTART.md                   # Quick start guide
-├── src/
-│   ├── __init__.py                # Package initialization
-│   ├── brute_force.py             # Brute force attack simulator
-│   ├── dictionary_attack.py       # Dictionary attack simulator
-│   └── utils.py                   # Utility functions and classes
-├── templates/
-│   └── index.html                 # Web app HTML template
-├── static/
-│   ├── css/
-│   │   └── style.css             # Web app styles
-│   └── js/
-│       └── app.js                 # Web app JavaScript
-├── brute-force-attack-simulator/
-│   ├── main.py                    # Legacy brute force script
-│   └── bruteforceattack2.gif      # Demo GIF
-└── dictionary-attack-simulator/
-    ├── main.py                    # Legacy dictionary script
-    └── passwords.txt              # Default password dictionary
-```
 
 ---
 
