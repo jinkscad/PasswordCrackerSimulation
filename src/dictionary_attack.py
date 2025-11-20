@@ -6,12 +6,14 @@ Enhanced with variations, patterns, statistics, and pause/resume
 import hashlib
 import os
 import threading
-from typing import Optional, List, Set, Dict, Callable
+from collections import deque
+from typing import Callable, Deque, Dict, List, Optional
 from pathlib import Path
 from colorama import Fore, Style
 from tqdm import tqdm
 
-from .utils import StatisticsTracker, PasswordAnalyzer, format_time
+from .utils import PasswordAnalyzer, StatisticsTracker, format_time
+from .wordlist_builder import WordlistBuilder, WordlistOptions
 
 
 class DictionaryAttack:
@@ -57,10 +59,11 @@ class DictionaryAttack:
         self.use_progress_bar = use_progress_bar
         self.verbose = verbose
         self.stats = StatisticsTracker()
-        self.tested_passwords: List[str] = []
+        self.tested_passwords: Deque[str] = deque(maxlen=1000)
         self.is_paused = False
         self.should_stop = False
         self.pause_lock = threading.Lock()
+        self.wordlist_builder = WordlistBuilder(substitutions=self.SUBSTITUTIONS)
     
     def detect_hash_type(self, hash_value: str) -> Optional[str]:
         """
@@ -263,11 +266,20 @@ class DictionaryAttack:
             import time
             time.sleep(0.1)
     
-    def attack(self, target_hash: str, dictionary_path: str, 
-               hash_algorithm: Optional[str] = None,
-               use_variations: bool = True,
-               use_patterns: bool = True,
-               progress_callback: Optional[Callable] = None) -> Optional[str]:
+    def attack(
+        self,
+        target_hash: str,
+        dictionary_path: str,
+        hash_algorithm: Optional[str] = None,
+        use_variations: bool = True,
+        use_patterns: bool = True,
+        *,
+        use_advanced_mangling: bool = False,
+        use_markov_generator: bool = False,
+        use_keyboard_walks: bool = False,
+        markov_candidate_limit: int = 1000,
+        progress_callback: Optional[Callable] = None,
+    ) -> Optional[str]:
         """
         Perform dictionary attack on hashed password with advanced features
         
@@ -285,7 +297,7 @@ class DictionaryAttack:
         print(f"\n{Fore.YELLOW}Starting Dictionary Attack...{Style.RESET_ALL}")
         
         # Reset state
-        self.tested_passwords = []
+        self.tested_passwords.clear()
         self.is_paused = False
         self.should_stop = False
         
@@ -302,53 +314,39 @@ class DictionaryAttack:
             if hash_algorithm not in self.SUPPORTED_HASHES:
                 raise ValueError(f"Unsupported hash algorithm: {hash_algorithm}")
         
-        # Load dictionary
-        print(f"{Fore.CYAN}Loading dictionary from: {dictionary_path}{Style.RESET_ALL}")
+        # Build streaming candidate iterator
         try:
-            base_passwords = self.load_dictionary(dictionary_path)
-            print(f"{Fore.GREEN}Loaded {len(base_passwords):,} base passwords{Style.RESET_ALL}")
+            options = WordlistOptions(
+                use_variations=use_variations,
+                use_patterns=use_patterns,
+                use_advanced_mangling=use_advanced_mangling,
+                use_markov=use_markov_generator,
+                use_keyboard_walks=use_keyboard_walks,
+                markov_candidate_limit=markov_candidate_limit,
+            )
+            candidate_iter = self.wordlist_builder.stream_candidates(
+                dictionary_path,
+                options=options,
+                variation_func=self.generate_variations if use_variations else None,
+                pattern_func=self.generate_pattern_variations if use_patterns else None,
+            )
         except Exception as e:
-            print(f"{Fore.RED}Error: {e}{Style.RESET_ALL}")
+            print(f"{Fore.RED}Error preparing candidates: {e}{Style.RESET_ALL}")
             return None
         
-        # Generate all password candidates
-        all_passwords = []
-        password_set = set()  # To avoid duplicates
-        
-        print(f"{Fore.CYAN}Generating password candidates...{Style.RESET_ALL}")
-        for base_pwd in base_passwords:
-            # Add base password
-            if base_pwd not in password_set:
-                all_passwords.append(base_pwd)
-                password_set.add(base_pwd)
-            
-            # Add variations if enabled
-            if use_variations:
-                variations = self.generate_variations(base_pwd)
-                for var in variations:
-                    if var not in password_set and len(var) <= 50:  # Reasonable length limit
-                        all_passwords.append(var)
-                        password_set.add(var)
-            
-            # Add pattern variations if enabled
-            if use_patterns:
-                patterns = self.generate_pattern_variations(base_pwd)
-                for pattern in patterns:
-                    if pattern not in password_set and len(pattern) <= 50:
-                        all_passwords.append(pattern)
-                        password_set.add(pattern)
-        
-        total_candidates = len(all_passwords)
-        print(f"{Fore.GREEN}Generated {total_candidates:,} total password candidates{Style.RESET_ALL}\n")
+        print(f"{Fore.CYAN}Streaming password candidates... (memory-efficient mode){Style.RESET_ALL}")
         
         # Perform attack
         self.stats.start()
         
         if self.use_progress_bar:
-            pbar = tqdm(total=total_candidates, desc="Testing passwords", 
-                       unit="passwords", bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]')
+            pbar = tqdm(
+                desc="Testing passwords",
+                unit="passwords",
+                bar_format="{l_bar}{bar}| {n_fmt} [{elapsed}<{remaining}]",
+            )
         
-        for password in all_passwords:
+        for idx, password in enumerate(candidate_iter, start=1):
             # Check if paused
             self._wait_if_paused()
             
@@ -374,9 +372,9 @@ class DictionaryAttack:
                 if progress_callback and self.stats.attempts % 100 == 0:
                     progress_callback({
                         'attempts': self.stats.attempts,
-                        'total': total_candidates,
+                        'total': None,
                         'current': password[:30],
-                        'progress': (self.stats.attempts / total_candidates) * 100
+                        'progress': None
                     })
                 
                 # Check if hash matches
@@ -416,7 +414,7 @@ class DictionaryAttack:
             'time_elapsed': elapsed,
             'attempts_per_second': aps,
             'passwords_tested': len(self.tested_passwords),
-            'tested_passwords': self.tested_passwords[-100:] if len(self.tested_passwords) > 100 else self.tested_passwords,  # Last 100
+            'tested_passwords': list(self.tested_passwords),
             'success_rate': 1.0 if self.stats.attempts > 0 and any(self.tested_passwords) else 0.0
         }
     
@@ -465,9 +463,34 @@ class DictionaryAttack:
         
         use_patterns = input(f"{Fore.CYAN}Use pattern matching? (y/n, default: y): {Style.RESET_ALL}").strip().lower()
         use_patterns = use_patterns != 'n'
+
+        use_adv_mangling = input(f"{Fore.CYAN}Use advanced mangling? (y/n, default: n): {Style.RESET_ALL}").strip().lower()
+        use_adv_mangling = use_adv_mangling == 'y'
+
+        use_markov = input(f"{Fore.CYAN}Add Markov generator guesses? (y/n, default: n): {Style.RESET_ALL}").strip().lower()
+        use_markov = use_markov == 'y'
+
+        use_keyboard = input(f"{Fore.CYAN}Include keyboard-walk sequences? (y/n, default: n): {Style.RESET_ALL}").strip().lower()
+        use_keyboard = use_keyboard == 'y'
+
+        markov_limit = 1000
+        if use_markov:
+            limit_input = input(f"{Fore.CYAN}How many Markov guesses? (default 1000): {Style.RESET_ALL}").strip()
+            if limit_input.isdigit():
+                markov_limit = max(100, min(100000, int(limit_input)))
         
         # Perform attack
-        result = self.attack(target_hash, dict_path, hash_type, use_variations, use_patterns)
+        result = self.attack(
+            target_hash,
+            dict_path,
+            hash_type,
+            use_variations,
+            use_patterns,
+            use_advanced_mangling=use_adv_mangling,
+            use_markov_generator=use_markov,
+            use_keyboard_walks=use_keyboard,
+            markov_candidate_limit=markov_limit,
+        )
         
         # Display results
         if result:
