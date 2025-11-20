@@ -30,12 +30,11 @@ Add these environment variables in the Render dashboard:
    - Value: `production`
 
 2. **PORT**
-   - Value: `10000`
-   - Note: Render automatically provides PORT, but we set it to 10000 to match our config
+   - ⚠️ **DO NOT SET THIS** - Render automatically provides PORT via environment variable
+   - The app will automatically read it
 
 3. **HOST**
-   - Value: `0.0.0.0`
-   - Note: This allows external connections
+   - ⚠️ **DO NOT SET THIS** - The app automatically uses 0.0.0.0 when PORT is set (production mode)
 
 ### Root Directory
 - Leave empty (use repository root)
