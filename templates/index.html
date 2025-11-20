@@ -23,7 +23,7 @@
         <div class="tabs">
             <button class="tab-btn active" data-tab="analyzer">Password Analyzer</button>
             <button class="tab-btn" data-tab="hash">Hash Generator</button>
-            <button class="tab-btn" data-tab="bruteforce">Brute Force Attack</button>
+            <button class="tab-btn" data-tab="breach">🔒 Breach Checker</button>
             <button class="tab-btn" data-tab="dictionary">Dictionary Attack</button>
         </div>
 
@@ -77,41 +77,35 @@
                 </div>
             </div>
 
-            <!-- Brute Force Attack Tab -->
-            <div id="bruteforce" class="tab-pane">
+            <!-- Password Breach Checker Tab -->
+            <div id="breach" class="tab-pane">
                 <div class="card">
-                    <h2>Brute Force Attack Simulator</h2>
-                    <p class="card-description">Simulate a brute force attack by trying every possible combination</p>
+                    <h2>🔒 Password Breach Checker</h2>
+                    <p class="card-description">Check if your password has been compromised in known data breaches using real breach data</p>
                     
                     <div class="form-group">
-                        <label for="brute-password">Target Password</label>
+                        <label for="breach-password">Enter Password to Check</label>
                         <div class="input-wrapper">
-                            <input type="password" id="brute-password" class="input" placeholder="Enter password to crack">
-                            <button type="button" class="password-toggle" onclick="togglePassword('brute-password', 'toggle-brute')" id="toggle-brute">
+                            <input type="password" id="breach-password" class="input" placeholder="Enter password to check against breach database">
+                            <button type="button" class="password-toggle" onclick="togglePassword('breach-password', 'toggle-breach')" id="toggle-breach">
                                 <span class="eye-icon">👁️</span>
                             </button>
                         </div>
+                        <small style="color: var(--text-muted); margin-top: 0.5rem; display: block;">
+                            🔐 Your password is hashed locally and only the first 5 characters are sent to the API (k-anonymity model)
+                        </small>
                     </div>
 
-                    <div class="form-group">
-                        <label for="brute-method">Attack Method</label>
-                        <select id="brute-method" class="input">
-                            <option value="random">Random Generation (Faster Demo)</option>
-                            <option value="sequential">Sequential Generation (More Realistic)</option>
-                        </select>
+                    <button class="btn btn-primary" onclick="checkPasswordBreach()">Check Password</button>
+
+                    <div id="breach-loading" class="loading hidden">
+                        <div class="spinner"></div>
+                        <p>Checking against Have I Been Pwned database...</p>
                     </div>
 
-                    <button class="btn btn-danger" onclick="startBruteForce()">Start Attack</button>
-                    <button class="btn btn-secondary" onclick="stopAttack('bruteforce')" id="stop-brute-btn" style="display: none;">Stop</button>
-
-                    <div id="brute-estimates" class="estimates hidden"></div>
-                    <div id="brute-progress" class="progress-container hidden">
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="brute-progress-fill"></div>
-                        </div>
-                        <div class="progress-text" id="brute-progress-text">Starting attack...</div>
-                    </div>
-                    <div id="brute-results" class="results hidden"></div>
+                    <div id="breach-results" class="results hidden"></div>
+                    <div id="breach-timeline" class="timeline-container hidden"></div>
+                    <div id="breach-risk" class="risk-assessment hidden"></div>
                 </div>
             </div>
 

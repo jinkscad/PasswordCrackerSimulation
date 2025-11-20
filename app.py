@@ -14,6 +14,7 @@ from flask_cors import CORS
 from src.brute_force import BruteForceAttack
 from src.dictionary_attack import DictionaryAttack
 from src.utils import PasswordAnalyzer
+from src.breach_checker import PasswordBreachChecker
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 app.config['SECRET_KEY'] = 'password-cracker-simulation-educational-tool'
@@ -69,6 +70,30 @@ def hash_password():
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 400
+
+
+@app.route('/api/breach/check', methods=['POST'])
+def check_breach():
+    """Check if password has been breached"""
+    data = request.json
+    password = data.get('password', '')
+    
+    if not password:
+        return jsonify({'error': 'Password is required'}), 400
+    
+    try:
+        checker = PasswordBreachChecker()
+        breach_result = checker.check_password(password)
+        
+        # Get comprehensive risk assessment
+        risk_assessment = checker.get_risk_assessment(password, breach_result)
+        
+        return jsonify({
+            'breach': breach_result,
+            'risk_assessment': risk_assessment
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/api/dictionary/attack', methods=['POST'])

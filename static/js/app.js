@@ -114,6 +114,176 @@ function getStrengthClass(strength) {
     return map[strength] || 'strength-moderate';
 }
 
+// Password Breach Checker
+async function checkPasswordBreach() {
+    const password = document.getElementById('breach-password').value;
+    const loadingDiv = document.getElementById('breach-loading');
+    const resultsDiv = document.getElementById('breach-results');
+    const timelineDiv = document.getElementById('breach-timeline');
+    const riskDiv = document.getElementById('breach-risk');
+    
+    if (!password) {
+        showError(resultsDiv, 'Please enter a password to check');
+        return;
+    }
+    
+    // Show loading
+    loadingDiv.classList.remove('hidden');
+    resultsDiv.classList.add('hidden');
+    timelineDiv.classList.add('hidden');
+    riskDiv.classList.add('hidden');
+    
+    try {
+        const response = await fetch('/api/breach/check', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ password })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            displayBreachResults(data);
+        } else {
+            showError(resultsDiv, data.error || 'Breach check failed');
+            loadingDiv.classList.add('hidden');
+        }
+    } catch (error) {
+        showError(resultsDiv, 'Error checking password: ' + error.message);
+        loadingDiv.classList.add('hidden');
+    }
+}
+
+function displayBreachResults(data) {
+    const loadingDiv = document.getElementById('breach-loading');
+    const resultsDiv = document.getElementById('breach-results');
+    const timelineDiv = document.getElementById('breach-timeline');
+    const riskDiv = document.getElementById('breach-risk');
+    
+    loadingDiv.classList.add('hidden');
+    
+    const breach = data.breach;
+    const risk = data.risk_assessment;
+    
+    // Main results
+    const riskColor = getRiskColor(breach.risk_level);
+    const riskIcon = getRiskIcon(breach.risk_level);
+    
+    let resultsHTML = `
+        <div class="result-item" style="border-left-color: ${riskColor}; background: ${riskColor}15;">
+            <strong style="color: ${riskColor}; font-size: 1.2rem;">${riskIcon} ${breach.message}</strong>
+    `;
+    
+    if (breach.breached) {
+        resultsHTML += `
+            <div style="margin-top: 1rem;">
+                <div style="font-size: 2rem; font-weight: bold; color: ${riskColor};">
+                    ${breach.count.toLocaleString()}
+                </div>
+                <div style="color: var(--text-muted);">times found in data breaches</div>
+            </div>
+        `;
+    }
+    
+    resultsHTML += `</div>`;
+    resultsDiv.innerHTML = resultsHTML;
+    resultsDiv.classList.remove('hidden');
+    
+    // Timeline
+    if (breach.breach_timeline && breach.breach_timeline.length > 0) {
+        let timelineHTML = `
+            <div class="result-item">
+                <strong>📅 Breach Timeline</strong>
+                <div class="timeline" style="margin-top: 1rem;">
+        `;
+        
+        breach.breach_timeline.forEach((entry, index) => {
+            timelineHTML += `
+                <div class="timeline-item" style="animation-delay: ${index * 0.1}s;">
+                    <div class="timeline-marker" style="background: ${riskColor};"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">${entry.formatted_date}</div>
+                        <div class="timeline-source">${entry.source}</div>
+                        <div class="timeline-count">${entry.count.toLocaleString()} occurrences</div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        timelineHTML += `</div></div>`;
+        timelineDiv.innerHTML = timelineHTML;
+        timelineDiv.classList.remove('hidden');
+    }
+    
+    // Risk Assessment
+    let riskHTML = `
+        <div class="result-item">
+            <strong>🛡️ Comprehensive Risk Assessment</strong>
+            <div style="margin-top: 1rem;">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                    <div style="font-size: 3rem; font-weight: bold; color: ${riskColor};">
+                        ${getRiskIcon(risk.overall_risk)}
+                    </div>
+                    <div>
+                        <div style="font-size: 1.5rem; font-weight: bold; color: ${riskColor}; text-transform: uppercase;">
+                            ${risk.overall_risk} Risk
+                        </div>
+                        <div style="color: var(--text-muted);">Password Strength: ${risk.strength_level} (${risk.strength_score}/100)</div>
+                    </div>
+                </div>
+    `;
+    
+    if (risk.risk_factors && risk.risk_factors.length > 0) {
+        riskHTML += `<div style="margin-top: 1rem;"><strong>Risk Factors:</strong></div>`;
+        risk.risk_factors.forEach(factor => {
+            const factorColor = getRiskColor(factor.severity);
+            riskHTML += `
+                <div style="margin-top: 0.5rem; padding: 0.75rem; background: ${factorColor}15; border-left: 3px solid ${factorColor}; border-radius: 4px;">
+                    <strong style="color: ${factorColor};">${factor.factor}</strong> - ${factor.description}
+                </div>
+            `;
+        });
+    }
+    
+    if (risk.recommendations && risk.recommendations.length > 0) {
+        riskHTML += `<div style="margin-top: 1.5rem;"><strong>💡 Recommendations:</strong></div><ul style="margin-top: 0.5rem; padding-left: 1.5rem;">`;
+        risk.recommendations.forEach(rec => {
+            riskHTML += `<li style="margin-top: 0.5rem; color: var(--text);">${rec}</li>`;
+        });
+        riskHTML += `</ul>`;
+    }
+    
+    riskHTML += `</div></div>`;
+    riskDiv.innerHTML = riskHTML;
+    riskDiv.classList.remove('hidden');
+}
+
+function getRiskColor(level) {
+    const colors = {
+        'safe': '#10b981',
+        'low': '#f59e0b',
+        'medium': '#f97316',
+        'high': '#ef4444',
+        'critical': '#dc2626',
+        'unknown': '#64748b'
+    };
+    return colors[level] || colors.unknown;
+}
+
+function getRiskIcon(level) {
+    const icons = {
+        'safe': '✅',
+        'low': '⚠️',
+        'medium': '🔶',
+        'high': '🔴',
+        'critical': '🚨',
+        'unknown': '❓'
+    };
+    return icons[level] || icons.unknown;
+}
+
 // Hash Generator
 async function generateHash() {
     const password = document.getElementById('hash-password').value;
@@ -495,5 +665,9 @@ document.getElementById('brute-password').addEventListener('keypress', (e) => {
 
 document.getElementById('dict-hash').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') startDictionaryAttack();
+});
+
+document.getElementById('breach-password').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') checkPasswordBreach();
 });
 
