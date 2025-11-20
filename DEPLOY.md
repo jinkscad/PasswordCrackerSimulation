@@ -30,13 +30,13 @@
    - Your app will be live at `https://your-app-name.onrender.com`
 
 **Pros:**
-- ✅ Free tier available
-- ✅ Easy GitHub integration
-- ✅ Automatic deployments
-- ✅ HTTPS included
+- Free tier available
+- Easy GitHub integration
+- Automatic deployments
+- HTTPS included
 
 **Cons:**
-- ⚠️ Free tier spins down after inactivity (takes ~30s to wake up)
+- Free tier spins down after inactivity (takes ~30s to wake up)
 
 ---
 
@@ -64,10 +64,10 @@
    - Your app will be live at `https://your-app-name.up.railway.app`
 
 **Pros:**
-- ✅ Very fast deployments
-- ✅ Free tier with $5 credit
-- ✅ Great developer experience
-- ✅ Auto HTTPS
+- Very fast deployments
+- Free tier with $5 credit
+- Great developer experience
+- Auto HTTPS
 
 ---
 
@@ -99,13 +99,13 @@
    - Your app will be at `yourusername.pythonanywhere.com`
 
 **Pros:**
-- ✅ Free tier available
-- ✅ Good for Python apps
-- ✅ Simple setup
+- Free tier available
+- Good for Python apps
+- Simple setup
 
 **Cons:**
-- ⚠️ Free tier has limitations
-- ⚠️ Custom domain requires paid plan
+- Free tier has limitations
+- Custom domain requires paid plan
 
 ---
 
@@ -197,5 +197,5 @@ For easiest deployment, I recommend **Render**:
 - Automatic HTTPS
 - Good documentation
 
-Just connect your GitHub repo and deploy! 🚀
+Just connect your GitHub repo and deploy!
 

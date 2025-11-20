@@ -472,7 +472,7 @@ class DictionaryAttack:
         # Display results
         if result:
             print(f"\n{Fore.GREEN}{'='*60}")
-            print(f"{Fore.GREEN}✓ PASSWORD CRACKED!{Style.RESET_ALL}")
+            print(f"{Fore.GREEN}PASSWORD CRACKED{Style.RESET_ALL}")
             print(f"{Fore.GREEN}{'='*60}{Style.RESET_ALL}")
             print(f"{Fore.GREEN}Password found: {Fore.YELLOW}{result}{Style.RESET_ALL}\n")
             
@@ -480,7 +480,7 @@ class DictionaryAttack:
             PasswordAnalyzer.display_analysis(result, show_password=True)
         else:
             print(f"\n{Fore.RED}{'='*60}")
-            print(f"{Fore.RED}✗ PASSWORD NOT FOUND{Style.RESET_ALL}")
+            print(f"{Fore.RED}PASSWORD NOT FOUND{Style.RESET_ALL}")
             print(f"{Fore.RED}{'='*60}{Style.RESET_ALL}")
             print(f"{Fore.YELLOW}The password was not found in the dictionary.{Style.RESET_ALL}")
             print(f"{Fore.YELLOW}This demonstrates that unique passwords are resistant to dictionary attacks.{Style.RESET_ALL}\n")

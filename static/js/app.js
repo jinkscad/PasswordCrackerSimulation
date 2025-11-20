@@ -84,10 +84,10 @@ function displayAnalysis(data, container) {
         </div>
         <div class="result-item">
             <strong>Character Composition</strong>
-            Lowercase: ${analysis.has_lowercase ? '✓' : '✗'}<br>
-            Uppercase: ${analysis.has_uppercase ? '✓' : '✗'}<br>
-            Digits: ${analysis.has_digits ? '✓' : '✗'}<br>
-            Symbols: ${analysis.has_symbols ? '✓' : '✗'}
+            Lowercase: ${analysis.has_lowercase ? 'Yes' : 'No'}<br>
+            Uppercase: ${analysis.has_uppercase ? 'Yes' : 'No'}<br>
+            Digits: ${analysis.has_digits ? 'Yes' : 'No'}<br>
+            Symbols: ${analysis.has_symbols ? 'Yes' : 'No'}
         </div>
         <div class="result-item">
             <strong>Estimated Entropy</strong>
@@ -95,7 +95,7 @@ function displayAnalysis(data, container) {
         </div>
         ${analysis.common_patterns.length > 0 ? `
             <div class="result-item result-error">
-                <strong>⚠️ Common Patterns Detected</strong>
+                <strong>Warning: Common Patterns Detected</strong>
                 ${analysis.common_patterns.join('<br>')}
             </div>
         ` : ''}
@@ -274,12 +274,12 @@ function getRiskColor(level) {
 
 function getRiskIcon(level) {
     const icons = {
-        'safe': '✅',
-        'low': '⚠️',
-        'medium': '🔶',
-        'high': '🔴',
-        'critical': '🚨',
-        'unknown': '❓'
+        'safe': 'SAFE',
+        'low': 'LOW',
+        'medium': 'MEDIUM',
+        'high': 'HIGH',
+        'critical': 'CRITICAL',
+        'unknown': 'UNKNOWN'
     };
     return icons[level] || icons.unknown;
 }
@@ -552,7 +552,7 @@ function showBruteResults(data) {
     if (data.status === 'success') {
         resultsDiv.innerHTML = `
             <div class="result-item result-success">
-                <strong>✓ Password Cracked!</strong>
+                <strong>Password Cracked</strong>
                 Password: <code>${data.password}</code><br>
                 Attempts: ${data.attempts.toLocaleString()}<br>
                 Time: ${data.time.toFixed(2)} seconds<br>
@@ -562,7 +562,7 @@ function showBruteResults(data) {
     } else {
         resultsDiv.innerHTML = `
             <div class="result-item result-error">
-                <strong>✗ ${data.message || 'Attack failed'}</strong><br>
+                <strong>${data.message || 'Attack failed'}</strong><br>
                 Attempts: ${data.attempts.toLocaleString()}<br>
                 Time: ${data.time.toFixed(2)} seconds
             </div>
@@ -591,7 +591,7 @@ function showDictResults(data) {
     if (data.status === 'success') {
         resultsDiv.innerHTML = `
             <div class="result-item result-success">
-                <strong>✓ Password Cracked!</strong>
+                <strong>Password Cracked</strong>
                 Password: <code>${data.password}</code><br>
                 Attempts: ${data.attempts.toLocaleString()}<br>
                 Time: ${data.time.toFixed(2)} seconds<br>
@@ -601,7 +601,7 @@ function showDictResults(data) {
     } else {
         resultsDiv.innerHTML = `
             <div class="result-item result-error">
-                <strong>✗ ${data.message || 'Password not found'}</strong><br>
+                <strong>${data.message || 'Password not found'}</strong><br>
                 Attempts: ${data.attempts.toLocaleString()}<br>
                 Time: ${data.time.toFixed(2)} seconds<br>
                 The password was not found in the dictionary.
@@ -613,7 +613,7 @@ function showDictResults(data) {
     if (data.passwords_tested !== undefined) {
         let statsHTML = `
             <div class="result-item">
-                <strong>📊 Attack Statistics</strong><br>
+                <strong>Attack Statistics</strong><br>
                 Total Passwords Tested: ${data.passwords_tested.toLocaleString()}<br>
                 Attempts: ${data.attempts.toLocaleString()}<br>
                 Time Elapsed: ${data.time.toFixed(2)} seconds<br>

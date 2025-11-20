@@ -205,7 +205,7 @@ class BruteForceAttack:
         # Display results
         if result:
             print(f"\n{Fore.GREEN}{'='*60}")
-            print(f"{Fore.GREEN}✓ PASSWORD CRACKED!{Style.RESET_ALL}")
+            print(f"{Fore.GREEN}PASSWORD CRACKED{Style.RESET_ALL}")
             print(f"{Fore.GREEN}{'='*60}{Style.RESET_ALL}")
             print(f"{Fore.GREEN}Password found: {Fore.YELLOW}{result}{Style.RESET_ALL}\n")
         else:

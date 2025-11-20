@@ -164,9 +164,9 @@ class PasswordBreachChecker:
         elif count < 1000:
             return "This password has been compromised multiple times. You should change it immediately."
         elif count < 10000:
-            return "⚠️ CRITICAL: This password is highly compromised. Change it immediately and never reuse it!"
+            return "CRITICAL: This password is highly compromised. Change it immediately and never reuse it."
         else:
-            return "🚨 EXTREMELY CRITICAL: This password is massively compromised. Change it immediately on ALL accounts!"
+            return "EXTREMELY CRITICAL: This password is massively compromised. Change it immediately on ALL accounts."
     
     def get_risk_assessment(self, password: str, breach_data: Dict) -> Dict:
         """

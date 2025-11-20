@@ -26,7 +26,7 @@ The web app provides a beautiful, responsive interface with:
 - **Interactive Tabs** - Easy navigation between features
 - **Mobile Responsive** - Works on all devices
 
-### 📊 Four Main Features
+### Four Main Features
 
 #### 1. Password Analyzer
 - Enter any password
@@ -102,5 +102,5 @@ The web app provides a beautiful, responsive interface with:
 - **Styling:** Modern CSS with CSS variables for theming
 - **Communication:** REST API + WebSocket for real-time progress
 
-Enjoy exploring password security! 🔐
+Enjoy exploring password security!
 

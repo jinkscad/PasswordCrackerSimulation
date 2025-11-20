@@ -114,10 +114,10 @@ class PasswordAnalyzer:
         print(f"Estimated Entropy: {Fore.WHITE}{analysis['entropy']:.1f} bits{Style.RESET_ALL}\n")
         
         print(f"{Fore.CYAN}Character Composition:{Style.RESET_ALL}")
-        print(f"  Lowercase: {Fore.GREEN if analysis['has_lowercase'] else Fore.RED}{'✓' if analysis['has_lowercase'] else '✗'}{Style.RESET_ALL}")
-        print(f"  Uppercase: {Fore.GREEN if analysis['has_uppercase'] else Fore.RED}{'✓' if analysis['has_uppercase'] else '✗'}{Style.RESET_ALL}")
-        print(f"  Digits: {Fore.GREEN if analysis['has_digits'] else Fore.RED}{'✓' if analysis['has_digits'] else '✗'}{Style.RESET_ALL}")
-        print(f"  Symbols: {Fore.GREEN if analysis['has_symbols'] else Fore.RED}{'✓' if analysis['has_symbols'] else '✗'}{Style.RESET_ALL}\n")
+        print(f"  Lowercase: {Fore.GREEN if analysis['has_lowercase'] else Fore.RED}{'Yes' if analysis['has_lowercase'] else 'No'}{Style.RESET_ALL}")
+        print(f"  Uppercase: {Fore.GREEN if analysis['has_uppercase'] else Fore.RED}{'Yes' if analysis['has_uppercase'] else 'No'}{Style.RESET_ALL}")
+        print(f"  Digits: {Fore.GREEN if analysis['has_digits'] else Fore.RED}{'Yes' if analysis['has_digits'] else 'No'}{Style.RESET_ALL}")
+        print(f"  Symbols: {Fore.GREEN if analysis['has_symbols'] else Fore.RED}{'Yes' if analysis['has_symbols'] else 'No'}{Style.RESET_ALL}\n")
         
         if analysis['common_patterns']:
             print(f"{Fore.YELLOW}Warning: Common patterns detected:{Style.RESET_ALL}")

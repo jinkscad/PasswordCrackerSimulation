@@ -35,11 +35,11 @@
 ## My Recommendation: **PasswordSecurityLab**
 
 Why?
-- ✅ Professional and educational
-- ✅ Clearly describes what it does
-- ✅ Good for portfolio/resume
-- ✅ Not too long, not too short
-- ✅ Emphasizes security (not just cracking)
+- Professional and educational
+- Clearly describes what it does
+- Good for portfolio/resume
+- Not too long, not too short
+- Emphasizes security (not just cracking)
 
 ## Alternative Short Names
 

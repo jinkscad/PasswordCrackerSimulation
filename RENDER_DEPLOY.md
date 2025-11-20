@@ -20,7 +20,7 @@ pip install -r requirements.txt
 python app.py
 ```
 
-⚠️ **IMPORTANT:** Do NOT use `gunicorn` - our app uses Flask-SocketIO which needs to run directly with Python.
+**IMPORTANT:** Do NOT use `gunicorn` - our app uses Flask-SocketIO which needs to run directly with Python.
 
 ### Environment Variables
 
@@ -30,11 +30,11 @@ Add these environment variables in the Render dashboard:
    - Value: `production`
 
 2. **PORT**
-   - ⚠️ **DO NOT SET THIS** - Render automatically provides PORT via environment variable
+   - DO NOT SET THIS - Render automatically provides PORT via environment variable
    - The app will automatically read it
 
 3. **HOST**
-   - ⚠️ **DO NOT SET THIS** - The app automatically uses 0.0.0.0 when PORT is set (production mode)
+   - DO NOT SET THIS - The app automatically uses 0.0.0.0 when PORT is set (production mode)
 
 ### Root Directory
 - Leave empty (use repository root)
@@ -45,12 +45,12 @@ Add these environment variables in the Render dashboard:
 
 ## Deployment Steps
 
-1. ✅ Name: `PassCheck Pro`
-2. ✅ Language: `Python 3`
-3. ✅ Branch: `main`
-4. ✅ Build Command: `pip install -r requirements.txt`
-5. ✅ Start Command: `python app.py`
-6. ✅ Add Environment Variables (see above)
+1. Name: `PassCheck Pro`
+2. Language: `Python 3`
+3. Branch: `main`
+4. Build Command: `pip install -r requirements.txt`
+5. Start Command: `python app.py`
+6. Add Environment Variables (see above)
 7. Click "Deploy Web Service"
 
 ## After Deployment
