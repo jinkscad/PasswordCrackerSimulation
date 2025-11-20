@@ -16,6 +16,23 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     });
 });
 
+// Password Toggle Function
+function togglePassword(inputId, toggleId) {
+    const input = document.getElementById(inputId);
+    const toggle = document.getElementById(toggleId);
+    const eyeIcon = toggle.querySelector('.eye-icon');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        toggle.classList.add('active');
+        eyeIcon.textContent = '🙈'; // Closed eye when password is visible
+    } else {
+        input.type = 'password';
+        toggle.classList.remove('active');
+        eyeIcon.textContent = '👁️'; // Open eye when password is hidden
+    }
+}
+
 // Password Analyzer
 async function analyzePassword() {
     const password = document.getElementById('analyze-password').value;

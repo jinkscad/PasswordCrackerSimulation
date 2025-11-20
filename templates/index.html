@@ -37,7 +37,12 @@
                     
                     <div class="form-group">
                         <label for="analyze-password">Enter Password</label>
-                        <input type="password" id="analyze-password" class="input" placeholder="Enter password to analyze">
+                        <div class="input-wrapper">
+                            <input type="password" id="analyze-password" class="input" placeholder="Enter password to analyze">
+                            <button type="button" class="password-toggle" onclick="togglePassword('analyze-password', 'toggle-analyze')" id="toggle-analyze">
+                                <span class="eye-icon">👁️</span>
+                            </button>
+                        </div>
                         <button class="btn btn-primary" onclick="analyzePassword()">Analyze</button>
                     </div>
 
@@ -80,7 +85,12 @@
                     
                     <div class="form-group">
                         <label for="brute-password">Target Password</label>
-                        <input type="password" id="brute-password" class="input" placeholder="Enter password to crack">
+                        <div class="input-wrapper">
+                            <input type="password" id="brute-password" class="input" placeholder="Enter password to crack">
+                            <button type="button" class="password-toggle" onclick="togglePassword('brute-password', 'toggle-brute')" id="toggle-brute">
+                                <span class="eye-icon">👁️</span>
+                            </button>
+                        </div>
                     </div>
 
                     <div class="form-group">
