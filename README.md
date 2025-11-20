@@ -1,4 +1,4 @@
-# 🔐 Password Security Lab
+# Password Security Lab
 
 <div align="center">
 
@@ -8,40 +8,40 @@
 
 **Comprehensive Password Security Analysis & Educational Tool**
 
-[🌐 Live Demo](https://passcheck-pro.onrender.com) • [Features](#-features) • [Quick Start](#-quick-start) • [Deployment](#-deployment)
+[Live Demo](https://passcheck-pro.onrender.com) • [Features](#-features) • [Quick Start](#-quick-start) • [Deployment](#-deployment)
 
 </div>
 
 ---
 
-## 📋 Overview
+## Overview
 
 A professional web application for analyzing password security, checking breach exposure, and demonstrating password attack methodologies. Built for educational purposes to promote better password security practices.
 
 ---
 
-## ✨ Features
+## Features
 
-### 🔒 Password Breach Checker
+### Password Breach Checker
 - **Real breach data** from Have I Been Pwned API
 - **Privacy-focused** k-anonymity model (only first 5 hash chars sent)
 - **Visual breach timeline** showing when passwords were leaked
 - **Risk assessment** with color-coded indicators
 - **Actionable recommendations**
 
-### 📊 Password Strength Analyzer
+### Password Strength Analyzer
 - Comprehensive strength scoring (0-100)
 - Character composition analysis
 - Entropy calculation
 - Common pattern detection
 - Real-time feedback
 
-### 🔐 Hash Generator
+### Hash Generator
 - Support for MD5, SHA1, SHA256, SHA512
 - Quick hash generation for testing
 - Copy-friendly output
 
-### 📚 Dictionary Attack Simulator
+### Dictionary Attack Simulator
 - **500+ password dictionary** with variations
 - **Password variations** (substitutions, case changes, patterns)
 - **Pattern matching** (Password123, password@123, etc.)
@@ -51,7 +51,7 @@ A professional web application for analyzing password security, checking breach 
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Python 3.7+
@@ -97,15 +97,15 @@ python main.py dictionary
 
 ---
 
-## 🌐 Live Demo
+## Live Demo
 
-**🚀 Live Application:** [https://passcheck-pro.onrender.com](https://passcheck-pro.onrender.com)
+**Live Application:** [https://passcheck-pro.onrender.com](https://passcheck-pro.onrender.com)
 
 Or run locally following the Quick Start guide above.
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Backend:** Flask, Flask-SocketIO
 - **Frontend:** HTML5, CSS3, JavaScript (Vanilla)
@@ -114,7 +114,7 @@ Or run locally following the Quick Start guide above.
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 PasswordCrackerSimulation/
@@ -135,7 +135,7 @@ PasswordCrackerSimulation/
 
 ---
 
-## 🚀 Deployment
+## Deployment
 
 ### Render (Recommended)
 
@@ -153,7 +153,7 @@ See [DEPLOY.md](DEPLOY.md) for detailed deployment instructions.
 
 ---
 
-## 🔒 Security & Privacy
+## Security & Privacy
 
 - **k-Anonymity Model:** Only first 5 characters of password hash sent to HIBP API
 - **No Password Storage:** Passwords are never stored or logged
@@ -162,7 +162,7 @@ See [DEPLOY.md](DEPLOY.md) for detailed deployment instructions.
 
 ---
 
-## ⚠️ Disclaimer
+## Disclaimer
 
 **Educational Purpose Only**
 
@@ -180,7 +180,7 @@ Always ensure you have explicit permission before testing security.
 
 ---
 
-## 📚 Key Learnings
+## Key Learnings
 
 - **Password Length Matters:** Each character exponentially increases security
 - **Complexity is Key:** Mixing character types significantly improves strength
@@ -190,7 +190,7 @@ Always ensure you have explicit permission before testing security.
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions welcome! Areas for improvement:
 - Additional hash algorithms
@@ -200,13 +200,13 @@ Contributions welcome! Areas for improvement:
 
 ---
 
-## 📝 License
+## License
 
 Educational use only. Use responsibly and ethically.
 
 ---
 
-## 🔗 Resources
+## Resources
 
 - [Have I Been Pwned](https://haveibeenpwned.com/) - Breach database
 - [OWASP Password Guidelines](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)
@@ -216,8 +216,8 @@ Educational use only. Use responsibly and ethically.
 
 <div align="center">
 
-**Remember: Strong passwords are your first line of defense! 🔐**
+**Remember: Strong passwords are your first line of defense.**
 
-Made with ❤️ for security education
+Made for security education
 
 </div>
