@@ -425,11 +425,16 @@ def run_bruteforce_attack(attack_id, password, method):
 
 
 if __name__ == '__main__':
+    import os
+    port = int(os.environ.get('PORT', 5001))
+    host = os.environ.get('HOST', '127.0.0.1')
+    debug = os.environ.get('FLASK_ENV') == 'development'
+    
     print("=" * 60)
     print("Password Cracking Simulation - Web Application")
     print("=" * 60)
-    print("Starting server on http://localhost:5001")
+    print(f"Starting server on http://{host}:{port}")
     print("Press Ctrl+C to stop")
     print("=" * 60)
-    socketio.run(app, debug=True, host='127.0.0.1', port=5001, allow_unsafe_werkzeug=True)
+    socketio.run(app, debug=debug, host=host, port=port, allow_unsafe_werkzeug=True)
 
