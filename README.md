@@ -8,7 +8,7 @@
 
 **Comprehensive Password Security Analysis & Educational Tool**
 
-[Live Demo](#-live-demo) • [Features](#-features) • [Quick Start](#-quick-start) • [Deployment](#-deployment)
+[🌐 Live Demo](https://passcheck-pro.onrender.com) • [Features](#-features) • [Quick Start](#-quick-start) • [Deployment](#-deployment)
 
 </div>
 
@@ -99,7 +99,7 @@ python main.py dictionary
 
 ## 🌐 Live Demo
 
-**Deployed on Render:** [Coming Soon]
+**🚀 Live Application:** [https://passcheck-pro.onrender.com](https://passcheck-pro.onrender.com)
 
 Or run locally following the Quick Start guide above.
 
