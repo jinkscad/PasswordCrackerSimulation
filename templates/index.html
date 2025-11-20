@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Cracking Simulation - Educational Tool</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">🔐 Password Cracker</h1>
+                <p class="subtitle">Educational Security Simulation Tool</p>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="analyzer">Password Analyzer</button>
+            <button class="tab-btn" data-tab="hash">Hash Generator</button>
+            <button class="tab-btn" data-tab="bruteforce">Brute Force Attack</button>
+            <button class="tab-btn" data-tab="dictionary">Dictionary Attack</button>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- Password Analyzer Tab -->
+            <div id="analyzer" class="tab-pane active">
+                <div class="card">
+                    <h2>Password Strength Analyzer</h2>
+                    <p class="card-description">Analyze the strength and security of your password</p>
+                    
+                    <div class="form-group">
+                        <label for="analyze-password">Enter Password</label>
+                        <input type="password" id="analyze-password" class="input" placeholder="Enter password to analyze">
+                        <button class="btn btn-primary" onclick="analyzePassword()">Analyze</button>
+                    </div>
+
+                    <div id="analyzer-results" class="results hidden"></div>
+                </div>
+            </div>
+
+            <!-- Hash Generator Tab -->
+            <div id="hash" class="tab-pane">
+                <div class="card">
+                    <h2>Password Hash Generator</h2>
+                    <p class="card-description">Generate hashes for passwords using various algorithms</p>
+                    
+                    <div class="form-group">
+                        <label for="hash-password">Enter Password</label>
+                        <input type="text" id="hash-password" class="input" placeholder="Enter password to hash">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="hash-algorithm">Hash Algorithm</label>
+                        <select id="hash-algorithm" class="input">
+                            <option value="md5">MD5</option>
+                            <option value="sha1">SHA1</option>
+                            <option value="sha256">SHA256</option>
+                            <option value="sha512">SHA512</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="generateHash()">Generate Hash</button>
+
+                    <div id="hash-results" class="results hidden"></div>
+                </div>
+            </div>
+
+            <!-- Brute Force Attack Tab -->
+            <div id="bruteforce" class="tab-pane">
+                <div class="card">
+                    <h2>Brute Force Attack Simulator</h2>
+                    <p class="card-description">Simulate a brute force attack by trying every possible combination</p>
+                    
+                    <div class="form-group">
+                        <label for="brute-password">Target Password</label>
+                        <input type="password" id="brute-password" class="input" placeholder="Enter password to crack">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="brute-method">Attack Method</label>
+                        <select id="brute-method" class="input">
+                            <option value="random">Random Generation (Faster Demo)</option>
+                            <option value="sequential">Sequential Generation (More Realistic)</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-danger" onclick="startBruteForce()">Start Attack</button>
+                    <button class="btn btn-secondary" onclick="stopAttack('bruteforce')" id="stop-brute-btn" style="display: none;">Stop</button>
+
+                    <div id="brute-estimates" class="estimates hidden"></div>
+                    <div id="brute-progress" class="progress-container hidden">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="brute-progress-fill"></div>
+                        </div>
+                        <div class="progress-text" id="brute-progress-text">Starting attack...</div>
+                    </div>
+                    <div id="brute-results" class="results hidden"></div>
+                </div>
+            </div>
+
+            <!-- Dictionary Attack Tab -->
+            <div id="dictionary" class="tab-pane">
+                <div class="card">
+                    <h2>Dictionary Attack Simulator</h2>
+                    <p class="card-description">Crack passwords using a dictionary of common passwords</p>
+                    
+                    <div class="form-group">
+                        <label for="dict-hash">Hashed Password</label>
+                        <input type="text" id="dict-hash" class="input" placeholder="Enter MD5/SHA1/SHA256/SHA512 hash">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="dict-file">Dictionary File (optional, uses default if empty)</label>
+                        <input type="text" id="dict-file" class="input" placeholder="dictionary-attack-simulator/passwords.txt">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="dict-algorithm">Hash Algorithm (auto-detected if not specified)</label>
+                        <select id="dict-algorithm" class="input">
+                            <option value="">Auto-detect</option>
+                            <option value="md5">MD5</option>
+                            <option value="sha1">SHA1</option>
+                            <option value="sha256">SHA256</option>
+                            <option value="sha512">SHA512</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-danger" onclick="startDictionaryAttack()">Start Attack</button>
+                    <button class="btn btn-secondary" onclick="stopAttack('dictionary')" id="stop-dict-btn" style="display: none;">Stop</button>
+
+                    <div id="dict-progress" class="progress-container hidden">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="dict-progress-fill"></div>
+                        </div>
+                        <div class="progress-text" id="dict-progress-text">Starting attack...</div>
+                    </div>
+                    <div id="dict-results" class="results hidden"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>⚠️ <strong>Educational Purpose Only</strong> - This tool is designed for learning about password security. Use responsibly and ethically.</p>
+        </footer>
+    </div>
+
+    <!-- Socket.IO -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
+
