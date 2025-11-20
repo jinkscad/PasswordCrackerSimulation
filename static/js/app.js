@@ -206,10 +206,15 @@ let currentDictAttackId = null;
 
 async function startDictionaryAttack() {
     const hash = document.getElementById('dict-hash').value;
-    const dictFile = document.getElementById('dict-file').value;
     const algorithm = document.getElementById('dict-algorithm').value || null;
+    const useVariations = document.getElementById('dict-variations').checked;
+    const usePatterns = document.getElementById('dict-patterns').checked;
     const progressDiv = document.getElementById('dict-progress');
     const resultsDiv = document.getElementById('dict-results');
+    const statsDiv = document.getElementById('dict-statistics');
+    const startBtn = document.querySelector('#dictionary .btn-danger');
+    const pauseBtn = document.getElementById('pause-dict-btn');
+    const resumeBtn = document.getElementById('resume-dict-btn');
     const stopBtn = document.getElementById('stop-dict-btn');
     
     if (!hash) {
@@ -225,8 +230,9 @@ async function startDictionaryAttack() {
             },
             body: JSON.stringify({ 
                 hash, 
-                dictionary: dictFile || undefined,
-                algorithm 
+                algorithm,
+                use_variations: useVariations,
+                use_patterns: usePatterns
             })
         });
         
@@ -234,9 +240,12 @@ async function startDictionaryAttack() {
         
         if (response.ok) {
             currentDictAttackId = data.attack_id;
+            startBtn.style.display = 'none';
+            pauseBtn.style.display = 'inline-block';
             stopBtn.style.display = 'inline-block';
             progressDiv.classList.remove('hidden');
             resultsDiv.classList.add('hidden');
+            statsDiv.classList.add('hidden');
         } else {
             showError(resultsDiv, data.error || 'Attack failed to start');
         }
@@ -245,16 +254,63 @@ async function startDictionaryAttack() {
     }
 }
 
-// Stop Attack
-function stopAttack(type) {
-    // Note: In a real implementation, you'd need to add a stop endpoint
-    // For now, this is a placeholder
-    if (type === 'bruteforce') {
+async function pauseDictionaryAttack() {
+    if (!currentDictAttackId) return;
+    
+    try {
+        await fetch('/api/dictionary/pause', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ attack_id: currentDictAttackId })
+        });
+        document.getElementById('pause-dict-btn').style.display = 'none';
+        document.getElementById('resume-dict-btn').style.display = 'inline-block';
+    } catch (error) {
+        console.error('Error pausing attack:', error);
+    }
+}
+
+async function resumeDictionaryAttack() {
+    if (!currentDictAttackId) return;
+    
+    try {
+        await fetch('/api/dictionary/resume', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ attack_id: currentDictAttackId })
+        });
+        document.getElementById('pause-dict-btn').style.display = 'inline-block';
+        document.getElementById('resume-dict-btn').style.display = 'none';
+    } catch (error) {
+        console.error('Error resuming attack:', error);
+    }
+}
+
+async function stopDictionaryAttack() {
+    if (!currentDictAttackId) return;
+    
+    try {
+        await fetch('/api/dictionary/stop', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ attack_id: currentDictAttackId })
+        });
+        currentDictAttackId = null;
+        document.querySelector('#dictionary .btn-danger').style.display = 'inline-block';
+        document.getElementById('pause-dict-btn').style.display = 'none';
+        document.getElementById('resume-dict-btn').style.display = 'none';
+        document.getElementById('stop-dict-btn').style.display = 'none';
+    } catch (error) {
+        console.error('Error stopping attack:', error);
+    }
+}
+
+// Stop Attack (for brute force - dictionary has its own function)
+function stopBruteForceAttack() {
+    // Placeholder for brute force stop functionality
+    if (currentBruteAttackId) {
         currentBruteAttackId = null;
         document.getElementById('stop-brute-btn').style.display = 'none';
-    } else if (type === 'dictionary') {
-        currentDictAttackId = null;
-        document.getElementById('stop-dict-btn').style.display = 'none';
     }
 }
 
@@ -349,7 +405,18 @@ function showBruteResults(data) {
 
 function showDictResults(data) {
     const resultsDiv = document.getElementById('dict-results');
+    const statsDiv = document.getElementById('dict-statistics');
     const progressDiv = document.getElementById('dict-progress');
+    const startBtn = document.querySelector('#dictionary .btn-danger');
+    const pauseBtn = document.getElementById('pause-dict-btn');
+    const resumeBtn = document.getElementById('resume-dict-btn');
+    const stopBtn = document.getElementById('stop-dict-btn');
+    
+    // Reset buttons
+    startBtn.style.display = 'inline-block';
+    pauseBtn.style.display = 'none';
+    resumeBtn.style.display = 'none';
+    stopBtn.style.display = 'none';
     
     if (data.status === 'success') {
         resultsDiv.innerHTML = `
@@ -372,8 +439,34 @@ function showDictResults(data) {
         `;
     }
     
+    // Show statistics
+    if (data.passwords_tested !== undefined) {
+        let statsHTML = `
+            <div class="result-item">
+                <strong>📊 Attack Statistics</strong><br>
+                Total Passwords Tested: ${data.passwords_tested.toLocaleString()}<br>
+                Attempts: ${data.attempts.toLocaleString()}<br>
+                Time Elapsed: ${data.time.toFixed(2)} seconds<br>
+                Speed: ${data.attempts_per_second.toFixed(0)} passwords/second
+        `;
+        
+        if (data.tested_passwords && data.tested_passwords.length > 0) {
+            statsHTML += `<br><br><strong>Last ${Math.min(20, data.tested_passwords.length)} Tested Passwords:</strong><br>`;
+            statsHTML += '<div style="max-height: 200px; overflow-y: auto; margin-top: 0.5rem;">';
+            data.tested_passwords.forEach(pwd => {
+                statsHTML += `<div style="font-family: monospace; font-size: 0.85rem; padding: 0.25rem 0;">• ${pwd}</div>`;
+            });
+            statsHTML += '</div>';
+        }
+        
+        statsHTML += '</div>';
+        statsDiv.innerHTML = statsHTML;
+        statsDiv.classList.remove('hidden');
+    }
+    
     resultsDiv.classList.remove('hidden');
     progressDiv.classList.add('hidden');
+    currentDictAttackId = null;
 }
 
 // Utility Functions

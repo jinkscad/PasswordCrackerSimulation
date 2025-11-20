@@ -127,11 +127,6 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="dict-file">Dictionary File (optional, uses default if empty)</label>
-                        <input type="text" id="dict-file" class="input" placeholder="dictionary-attack-simulator/passwords.txt">
-                    </div>
-
-                    <div class="form-group">
                         <label for="dict-algorithm">Hash Algorithm (auto-detected if not specified)</label>
                         <select id="dict-algorithm" class="input">
                             <option value="">Auto-detect</option>
@@ -142,8 +137,23 @@
                         </select>
                     </div>
 
-                    <button class="btn btn-danger" onclick="startDictionaryAttack()">Start Attack</button>
-                    <button class="btn btn-secondary" onclick="stopAttack('dictionary')" id="stop-dict-btn" style="display: none;">Stop</button>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="checkbox" id="dict-variations" checked>
+                            <span>Use Password Variations (substitutions, case changes)</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+                            <input type="checkbox" id="dict-patterns" checked>
+                            <span>Use Pattern Matching (Password123, password@123, etc.)</span>
+                        </label>
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button class="btn btn-danger" onclick="startDictionaryAttack()">Start Attack</button>
+                        <button class="btn btn-secondary" onclick="pauseDictionaryAttack()" id="pause-dict-btn" style="display: none;">Pause</button>
+                        <button class="btn btn-secondary" onclick="resumeDictionaryAttack()" id="resume-dict-btn" style="display: none;">Resume</button>
+                        <button class="btn btn-secondary" onclick="stopDictionaryAttack()" id="stop-dict-btn" style="display: none;">Stop</button>
+                    </div>
 
                     <div id="dict-progress" class="progress-container hidden">
                         <div class="progress-bar">
@@ -152,6 +162,7 @@
                         <div class="progress-text" id="dict-progress-text">Starting attack...</div>
                     </div>
                     <div id="dict-results" class="results hidden"></div>
+                    <div id="dict-statistics" class="results hidden"></div>
                 </div>
             </div>
         </div>

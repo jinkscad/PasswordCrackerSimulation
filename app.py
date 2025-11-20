@@ -21,8 +21,9 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 CORS(app, resources={r"/*": {"origins": "*"}})
 
-# Global attack threads
+# Global attack threads and attack objects
 active_attacks = {}
+attack_objects = {}  # Store attack objects for pause/resume
 
 
 @app.route('/')
@@ -77,6 +78,8 @@ def dictionary_attack():
     target_hash = data.get('hash', '')
     dictionary_path = data.get('dictionary', '')
     algorithm = data.get('algorithm', None)
+    use_variations = data.get('use_variations', True)
+    use_patterns = data.get('use_patterns', True)
     
     if not target_hash:
         return jsonify({'error': 'Hash is required'}), 400
@@ -98,9 +101,12 @@ def dictionary_attack():
     
     # Start attack in background thread
     attack_id = f"dict_{int(time.time())}"
+    attack = DictionaryAttack(use_progress_bar=False, verbose=False)
+    attack_objects[attack_id] = attack
+    
     thread = threading.Thread(
         target=run_dictionary_attack,
-        args=(attack_id, target_hash, dictionary_path, algorithm)
+        args=(attack_id, target_hash, dictionary_path, algorithm, use_variations, use_patterns)
     )
     thread.daemon = True
     thread.start()
@@ -112,76 +118,135 @@ def dictionary_attack():
     })
 
 
-def run_dictionary_attack(attack_id, target_hash, dictionary_path, algorithm):
+@app.route('/api/dictionary/pause', methods=['POST'])
+def pause_dictionary_attack():
+    """Pause dictionary attack"""
+    data = request.json
+    attack_id = data.get('attack_id', '')
+    
+    if attack_id in attack_objects:
+        attack_objects[attack_id].pause()
+        return jsonify({'status': 'paused'})
+    return jsonify({'error': 'Attack not found'}), 404
+
+
+@app.route('/api/dictionary/resume', methods=['POST'])
+def resume_dictionary_attack():
+    """Resume dictionary attack"""
+    data = request.json
+    attack_id = data.get('attack_id', '')
+    
+    if attack_id in attack_objects:
+        attack_objects[attack_id].resume()
+        return jsonify({'status': 'resumed'})
+    return jsonify({'error': 'Attack not found'}), 404
+
+
+@app.route('/api/dictionary/stop', methods=['POST'])
+def stop_dictionary_attack():
+    """Stop dictionary attack"""
+    data = request.json
+    attack_id = data.get('attack_id', '')
+    
+    if attack_id in attack_objects:
+        attack_objects[attack_id].stop()
+        if attack_id in active_attacks:
+            del active_attacks[attack_id]
+        return jsonify({'status': 'stopped'})
+    return jsonify({'error': 'Attack not found'}), 404
+
+
+@app.route('/api/dictionary/stats', methods=['POST'])
+def get_dictionary_stats():
+    """Get dictionary attack statistics"""
+    data = request.json
+    attack_id = data.get('attack_id', '')
+    
+    if attack_id in attack_objects:
+        stats = attack_objects[attack_id].get_statistics()
+        return jsonify(stats)
+    return jsonify({'error': 'Attack not found'}), 404
+
+
+def run_dictionary_attack(attack_id, target_hash, dictionary_path, algorithm, use_variations, use_patterns):
     """Run dictionary attack and emit progress via SocketIO"""
-    attack = DictionaryAttack(use_progress_bar=False, verbose=False)
+    attack = attack_objects.get(attack_id)
+    if not attack:
+        attack = DictionaryAttack(use_progress_bar=False, verbose=False)
+        attack_objects[attack_id] = attack
+    
+    def progress_callback(progress_data):
+        """Callback for progress updates"""
+        socketio.emit('attack_progress', {
+            'attack_id': attack_id,
+            'type': 'dictionary',
+            'status': 'running',
+            **progress_data
+        })
     
     try:
-        # Load dictionary
-        passwords = attack.load_dictionary(dictionary_path)
         socketio.emit('attack_progress', {
             'attack_id': attack_id,
             'type': 'dictionary',
             'status': 'loading',
-            'total': len(passwords),
-            'message': f'Loaded {len(passwords)} passwords'
+            'message': 'Loading dictionary and generating variations...'
         })
         
-        # Detect hash algorithm
-        if algorithm is None:
-            algorithm = attack.detect_hash_type(target_hash) or 'md5'
+        # Perform attack with new enhanced method
+        result = attack.attack(
+            target_hash, 
+            dictionary_path, 
+            algorithm,
+            use_variations=use_variations,
+            use_patterns=use_patterns,
+            progress_callback=progress_callback
+        )
         
-        attack.stats.start()
+        if result:
+            stats = attack.get_statistics()
+            attack.stats.stop()
+            socketio.emit('attack_complete', {
+                'attack_id': attack_id,
+                'type': 'dictionary',
+                'status': 'success',
+                'password': result,
+                'attempts': attack.stats.attempts,
+                'time': attack.stats.get_elapsed_time(),
+                'attempts_per_second': attack.stats.get_attempts_per_second(),
+                'passwords_tested': stats['passwords_tested'],
+                'tested_passwords': stats['tested_passwords'][-20:]  # Last 20 tested
+            })
+        else:
+            stats = attack.get_statistics()
+            attack.stats.stop()
+            socketio.emit('attack_complete', {
+                'attack_id': attack_id,
+                'type': 'dictionary',
+                'status': 'failed',
+                'message': 'Password not found in dictionary',
+                'attempts': attack.stats.attempts,
+                'time': attack.stats.get_elapsed_time(),
+                'attempts_per_second': attack.stats.get_attempts_per_second(),
+                'passwords_tested': stats['passwords_tested'],
+                'tested_passwords': stats['tested_passwords'][-20:]  # Last 20 tested
+            })
         
-        # Perform attack
-        for i, password in enumerate(passwords):
-            try:
-                password_hash = attack.hash_password(password, algorithm)
-                attack.stats.increment()
-                
-                # Emit progress every 100 passwords
-                if i % 100 == 0 or i == len(passwords) - 1:
-                    socketio.emit('attack_progress', {
-                        'attack_id': attack_id,
-                        'type': 'dictionary',
-                        'status': 'running',
-                        'attempts': attack.stats.attempts,
-                        'total': len(passwords),
-                        'current': password[:30],
-                        'progress': (i + 1) / len(passwords) * 100
-                    })
-                
-                if password_hash.lower() == target_hash.lower():
-                    attack.stats.stop()
-                    socketio.emit('attack_complete', {
-                        'attack_id': attack_id,
-                        'type': 'dictionary',
-                        'status': 'success',
-                        'password': password,
-                        'attempts': attack.stats.attempts,
-                        'time': attack.stats.get_elapsed_time(),
-                        'attempts_per_second': attack.stats.get_attempts_per_second()
-                    })
-                    return
-            except Exception as e:
-                continue
-        
-        attack.stats.stop()
-        socketio.emit('attack_complete', {
-            'attack_id': attack_id,
-            'type': 'dictionary',
-            'status': 'failed',
-            'message': 'Password not found in dictionary',
-            'attempts': attack.stats.attempts,
-            'time': attack.stats.get_elapsed_time(),
-            'attempts_per_second': attack.stats.get_attempts_per_second()
-        })
+        # Cleanup
+        if attack_id in active_attacks:
+            del active_attacks[attack_id]
+        if attack_id in attack_objects:
+            del attack_objects[attack_id]
+            
     except Exception as e:
         socketio.emit('attack_error', {
             'attack_id': attack_id,
             'type': 'dictionary',
             'error': str(e)
         })
+        if attack_id in active_attacks:
+            del active_attacks[attack_id]
+        if attack_id in attack_objects:
+            del attack_objects[attack_id]
 
 
 @app.route('/api/bruteforce/attack', methods=['POST'])
