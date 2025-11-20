@@ -1,4 +1,4 @@
-# Password Cracking Simulation
+# 🔐 Password Security Lab
 
 <div align="center">
 
@@ -6,324 +6,211 @@
 ![Python](https://img.shields.io/badge/python-3.7+-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-orange.svg)
 
-**Educational Security Tool Demonstrating Password Vulnerabilities**
+**Comprehensive Password Security Analysis & Educational Tool**
 
-[Features](#features) • [Installation](#installation) • [Usage](#usage) • [Web App](#web-application) • [Documentation](#documentation)
+[Live Demo](#-live-demo) • [Features](#-features) • [Quick Start](#-quick-start) • [Deployment](#-deployment)
 
 </div>
 
 ---
 
-## 📋 Description
+## 📋 Overview
 
-This project is a comprehensive educational tool that simulates two primary password-cracking techniques: **Brute Force Attacks** and **Dictionary Attacks**. The purpose is to demonstrate the vulnerabilities of weak passwords and highlight the importance of secure password practices and modern hashing algorithms.
-
-### Key Features
-
-- 🔓 **Brute Force Attack Simulator** - Demonstrates exhaustive password guessing
-- 📚 **Dictionary Attack Simulator** - Shows how common passwords are easily cracked
-- 📊 **Password Strength Analyzer** - Comprehensive password security analysis
-- ⏱️ **Performance Statistics** - Real-time attack metrics and timing
-- 🎨 **Professional CLI Interface** - Color-coded output with progress bars
-- 🌐 **Modern Web Application** - Beautiful, responsive web interface
-- 🔐 **Multiple Hash Algorithms** - Support for MD5, SHA1, SHA256, SHA512
+A professional web application for analyzing password security, checking breach exposure, and demonstrating password attack methodologies. Built for educational purposes to promote better password security practices.
 
 ---
 
-## 🚀 Installation
+## ✨ Features
 
-### Prerequisites
+### 🔒 Password Breach Checker
+- **Real breach data** from Have I Been Pwned API
+- **Privacy-focused** k-anonymity model (only first 5 hash chars sent)
+- **Visual breach timeline** showing when passwords were leaked
+- **Risk assessment** with color-coded indicators
+- **Actionable recommendations**
 
-- Python 3.7 or higher
-- pip (Python package manager)
-
-### Setup
-
-1. **Clone or download the repository**
-   ```bash
-   cd PasswordCrackerSimulation
-   ```
-
-2. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Verify installation**
-   ```bash
-   python main.py --help
-   ```
-
----
-
-## 💻 Usage
-
-### 🌐 Web Application (Recommended)
-
-The easiest way to use this tool is through the web interface:
-
-```bash
-python app.py
-```
-
-Then open your browser and navigate to:
-```
-http://localhost:5000
-```
-
-**Web App Features:**
-- 🎨 Beautiful, modern UI with dark theme
-- 📊 Real-time progress updates via WebSocket
-- 🔄 Interactive tabs for all features
-- 📱 Fully responsive design
-- ⚡ Live statistics and results
-
-### 💻 Command Line Interface
-
-#### Interactive Mode
-
-##### Brute Force Attack
-```bash
-python main.py brute-force
-```
-
-##### Dictionary Attack
-```bash
-python main.py dictionary
-```
-
-#### Command-Line Options
-
-##### Password Strength Analysis
-```bash
-# Analyze a password interactively
-python main.py analyze
-
-# Analyze a specific password
-python main.py analyze --password "MyP@ssw0rd123"
-
-# Show password in analysis (default is masked)
-python main.py analyze --password "MyP@ssw0rd123" --show-password
-```
-
-##### Hash Generation
-```bash
-# Generate MD5 hash (default)
-python main.py hash --password "test"
-
-# Generate SHA256 hash
-python main.py hash --password "test" --algorithm sha256
-
-# Available algorithms: md5, sha1, sha256, sha512
-```
-
-##### Non-Interactive Dictionary Attack
-```bash
-python main.py dictionary --hash "098f6bcd4621d373cade4e832627b4f6" \
-                          --dict "dictionary-attack-simulator/passwords.txt" \
-                          --algorithm md5
-```
-
-##### Advanced Options
-```bash
-# Disable progress bar
-python main.py brute-force --no-progress
-
-# Quiet mode (reduce output)
-python main.py dictionary --quiet
-```
-
----
-
-## 📖 Program Walk-through
-
-### Web Application Interface
-
-The web app provides four main tabs:
-
-1. **Password Analyzer** - Analyze password strength instantly
-2. **Hash Generator** - Generate hashes for any password
-3. **Brute Force Attack** - Simulate brute force attacks with real-time progress
-4. **Dictionary Attack** - Crack hashed passwords using wordlists
-
-### Brute Force Attack Simulator
-
-The brute force simulator demonstrates how attackers systematically try every possible password combination.
-
-**Features:**
-- Random generation mode (faster demo)
-- Sequential generation mode (more realistic)
-- Time estimation based on password complexity
-- Real-time attempt tracking
-- Performance statistics
-
-**Example Output:**
-```
-Password Strength Analysis
-============================================================
-Length: 8 characters
-Strength Score: 65/100
-Strength Level: Strong
-Estimated Entropy: 160.0 bits
-
-Brute Force Time Estimate:
-  Total possible combinations: 218,340,105,584,896
-  Estimated time (at 1M attempts/sec): 6.91 years
-
-✓ PASSWORD CRACKED!
-Password found: Pass@123
-
-Brute Force Attack Statistics
-============================================================
-Total Attempts: 1,234,567
-Time Elapsed: 45.23 seconds
-Attempts/Second: 27,293
-```
-
-**Security Insight:** This demonstrates that longer, more complex passwords exponentially increase the time required to crack them through brute force.
-
-### Dictionary Attack Simulator
-
-The dictionary attack simulator shows how attackers use pre-compiled wordlists to quickly crack common passwords.
-
-**Features:**
-- Automatic hash algorithm detection
-- Support for multiple hash types (MD5, SHA1, SHA256, SHA512)
-- Progress tracking with password preview
-- Comprehensive statistics
-
-**Example Usage:**
-```bash
-Enter the hashed password: 098f6bcd4621d373cade4e832627b4f6
-Enter dictionary file path: dictionary-attack-simulator/passwords.txt
-```
-
-**Example Output:**
-```
-Detected hash algorithm: MD5
-Loaded 20 password candidates
-
-✓ PASSWORD CRACKED!
-Password found: test
-
-Password Strength Analysis
-============================================================
-Length: 4 characters
-Strength Score: 15/100
-Strength Level: Very Weak
-```
-
-**Security Insight:** Dictionary attacks are extremely fast for common passwords but fail against unique, random passwords not in the dictionary.
-
-### Password Strength Analyzer
-
-The analyzer provides comprehensive password security assessment:
-
-**Metrics:**
-- Strength score (0-100)
-- Strength level (Very Weak to Very Strong)
+### 📊 Password Strength Analyzer
+- Comprehensive strength scoring (0-100)
 - Character composition analysis
 - Entropy calculation
 - Common pattern detection
+- Real-time feedback
 
-**Example:**
+### 🔐 Hash Generator
+- Support for MD5, SHA1, SHA256, SHA512
+- Quick hash generation for testing
+- Copy-friendly output
+
+### 📚 Dictionary Attack Simulator
+- **500+ password dictionary** with variations
+- **Password variations** (substitutions, case changes, patterns)
+- **Pattern matching** (Password123, password@123, etc.)
+- **Pause/Resume/Stop** controls
+- **Real-time progress** with WebSocket updates
+- **Detailed statistics** and tested passwords list
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Python 3.7+
+- pip
+
+### Installation
+
 ```bash
-python main.py analyze --password "MySecureP@ssw0rd!"
+# Clone repository
+git clone https://github.com/jinkscad/PasswordCrackerSimulation.git
+cd PasswordCrackerSimulation
+
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### Run Locally
+
+```bash
+# Start the web server
+python app.py
+
+# Open browser
+# http://localhost:5001
+```
+
+### CLI Usage
+
+```bash
+# Analyze password strength
+python main.py analyze --password "MyP@ssw0rd"
+
+# Generate hash
+python main.py hash --password "test" --algorithm md5
+
+# Dictionary attack
+python main.py dictionary
 ```
 
 ---
 
-## 🔒 Security Recommendations
+## 🌐 Live Demo
 
-### For Users
-- ✅ Use passwords with **12+ characters**
-- ✅ Include **uppercase, lowercase, numbers, and symbols**
-- ✅ Avoid **common patterns** and dictionary words
-- ✅ Use **unique passwords** for each account
-- ✅ Consider using a **password manager**
-- ✅ Use **passphrases** instead of single words
+**Deployed on Render:** [Coming Soon]
 
-### For Developers
-- ⚠️ **Never use MD5 or SHA1** for password hashing
-- ✅ Use **modern algorithms**: bcrypt, Argon2, scrypt
-- ✅ Implement **salting** (unique salt per password)
-- ✅ Use **key stretching** (multiple iterations)
-- ✅ Implement **rate limiting** on login attempts
-- ✅ Consider **multi-factor authentication (MFA)**
-
+Or run locally following the Quick Start guide above.
 
 ---
 
-## 🛠️ Technologies Used
+## 🛠️ Tech Stack
 
-- **Python 3.7+** - Core programming language
-- **Flask** - Web framework
-- **Flask-SocketIO** - Real-time WebSocket communication
-- **colorama** - Cross-platform colored terminal output
-- **tqdm** - Progress bars and visual feedback
-- **pyfiglet** - ASCII art banners
-- **hashlib** - Cryptographic hashing functions
-- **HTML/CSS/JavaScript** - Modern web interface
+- **Backend:** Flask, Flask-SocketIO
+- **Frontend:** HTML5, CSS3, JavaScript (Vanilla)
+- **APIs:** Have I Been Pwned API
+- **Python Libraries:** requests, colorama, tqdm
 
 ---
 
-## 📊 Key Learnings
+## 📁 Project Structure
 
-This project demonstrates several important security concepts:
+```
+PasswordCrackerSimulation/
+├── app.py                 # Flask web application
+├── main.py                # CLI entry point
+├── requirements.txt       # Dependencies
+├── src/
+│   ├── breach_checker.py  # Breach checking with HIBP API
+│   ├── dictionary_attack.py  # Dictionary attack simulator
+│   ├── brute_force.py     # Brute force simulator
+│   └── utils.py           # Utilities (analyzer, stats)
+├── templates/
+│   └── index.html         # Web app UI
+└── static/
+    ├── css/style.css      # Styling
+    └── js/app.js          # Frontend logic
+```
 
-1. **Password Length Matters**: Each additional character exponentially increases cracking time
-2. **Complexity is Key**: Mixing character types significantly improves security
-3. **Dictionary Attacks are Fast**: Common passwords are vulnerable to pre-compiled wordlists
-4. **Hashing Alone is Insufficient**: MD5/SHA1 are vulnerable; modern algorithms are essential
-5. **Unique Passwords Resist Dictionary Attacks**: Random, unique passwords protect against wordlist attacks
+---
+
+## 🚀 Deployment
+
+### Render (Recommended)
+
+1. Connect GitHub repository to Render
+2. Create new Web Service
+3. Configure:
+   - **Build Command:** `pip install -r requirements.txt`
+   - **Start Command:** `python app.py`
+   - **Environment Variables:**
+     - `FLASK_ENV=production`
+     - `PORT=10000`
+     - `HOST=0.0.0.0`
+
+See [DEPLOY.md](DEPLOY.md) for detailed deployment instructions.
+
+---
+
+## 🔒 Security & Privacy
+
+- **k-Anonymity Model:** Only first 5 characters of password hash sent to HIBP API
+- **No Password Storage:** Passwords are never stored or logged
+- **Local Hashing:** All hashing done client-side before API calls
+- **HTTPS Required:** All deployments use HTTPS encryption
 
 ---
 
 ## ⚠️ Disclaimer
 
-**This tool is for educational purposes only.** It is designed to:
-- Teach password security principles
-- Demonstrate attack methodologies
-- Highlight security vulnerabilities
-- Promote better security practices
+**Educational Purpose Only**
 
-**Do not use this tool for:**
-- Unauthorized access to systems
+This tool is designed for:
+- Learning password security principles
+- Demonstrating attack methodologies
+- Promoting better security practices
+
+**Do NOT use for:**
+- Unauthorized access attempts
 - Cracking passwords without permission
 - Any illegal activities
 
-Always ensure you have explicit permission before testing security on any system.
+Always ensure you have explicit permission before testing security.
+
+---
+
+## 📚 Key Learnings
+
+- **Password Length Matters:** Each character exponentially increases security
+- **Complexity is Key:** Mixing character types significantly improves strength
+- **Breach Exposure:** Common passwords are highly vulnerable
+- **Unique Passwords:** Random, unique passwords resist dictionary attacks
+- **Modern Hashing:** Use bcrypt/Argon2 instead of MD5/SHA1
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Areas for improvement:
-- Additional hash algorithm support
-- GPU acceleration for brute force attacks
-- More sophisticated password analysis
-- Additional dictionary files
+Contributions welcome! Areas for improvement:
+- Additional hash algorithms
+- More sophisticated pattern detection
+- Enhanced visualizations
 - Mobile app version
 
 ---
 
 ## 📝 License
 
-This project is provided for educational purposes. Use responsibly and ethically.
-
----
-
-## 👨‍💻 Author
-
-Educational Security Tool - Version 2.0
+Educational use only. Use responsibly and ethically.
 
 ---
 
 ## 🔗 Resources
 
-- [OWASP Password Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)
+- [Have I Been Pwned](https://haveibeenpwned.com/) - Breach database
+- [OWASP Password Guidelines](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)
 - [NIST Password Guidelines](https://pages.nist.gov/800-63-3/sp800-63b.html)
-- [Have I Been Pwned](https://haveibeenpwned.com/) - Check if your password has been compromised
 
 ---
 
