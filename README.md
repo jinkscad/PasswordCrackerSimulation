@@ -190,13 +190,16 @@ Always ensure you have explicit permission before testing security.
 
 ---
 
-## Contributing
+## Contribution Policy
 
-Contributions welcome! Areas for improvement:
-- Additional hash algorithms
-- More sophisticated pattern detection
-- Enhanced visualizations
-- Mobile app version
+To keep the educational demo authentic and avoid unvetted changes, **direct commits, pushes, and pull requests are limited to @jinkscad only**.  
+If you would like to experiment with the project:
+
+- Fork the repository to your own account
+- Work on the forked copy for personal or educational use
+- Do **not** open pull requests or attempt to push to this canonical repo
+
+The repository now includes an automated GitHub Action (`Owner Write Access Guard`) that rejects pushes/PRs from any other actor. Combine this with branch protection on `main` to enforce the rule end-to-end.
 
 ---
 
