@@ -276,39 +276,54 @@ def run_dictionary_attack(attack_id, target_hash, dictionary_path, algorithm, us
 
 @app.route('/api/bruteforce/attack', methods=['POST'])
 def bruteforce_attack():
-    """Start brute force attack"""
+    """Start brute force attack on hash"""
     data = request.json
-    password = data.get('password', '')
-    method = data.get('method', 'random')  # 'random' or 'sequential'
-    
-    if not password:
-        return jsonify({'error': 'Password is required'}), 400
-    
-    # Validate password characters
-    attack = BruteForceAttack()
-    invalid_chars = [c for c in password if c not in attack.all_chars]
-    if invalid_chars:
-        return jsonify({
-            'error': f'Invalid characters: {set(invalid_chars)}'
-        }), 400
-    
+    target_hash = data.get('hash', '')
+    algorithm = data.get('algorithm', None)
+    charset = data.get('charset', 'all')
+    min_length = data.get('min_length', 1)
+    max_length = data.get('max_length', 4)
+
+    if not target_hash:
+        return jsonify({'error': 'Hash is required'}), 400
+
+    # Auto-detect algorithm
+    if not algorithm:
+        length = len(target_hash)
+        hash_map = {32: 'md5', 40: 'sha1', 64: 'sha256', 128: 'sha512'}
+        algorithm = hash_map.get(length, 'md5')
+
     # Start attack in background thread
     attack_id = f"brute_{int(time.time())}"
     thread = threading.Thread(
-        target=run_bruteforce_attack,
-        args=(attack_id, password, method)
+        target=run_bruteforce_hash_attack,
+        args=(attack_id, target_hash, algorithm, charset, min_length, max_length)
     )
     thread.daemon = True
     thread.start()
     active_attacks[attack_id] = thread
-    
+
     # Calculate estimates
-    estimates = attack.estimate_time(len(password))
-    
+    charsets = {
+        'numeric': '0123456789',
+        'lower': 'abcdefghijklmnopqrstuvwxyz',
+        'upper': 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+        'alpha': 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
+        'alphanumeric': 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
+        'all': 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[]{}|;:\'",.<>?/`~'
+    }
+    char_set = charsets.get(charset, charsets['all'])
+    total = sum(len(char_set) ** l for l in range(min_length, max_length + 1))
+
     return jsonify({
         'attack_id': attack_id,
         'status': 'started',
-        'estimates': estimates
+        'estimates': {
+            'total_combinations': total,
+            'charset_size': len(char_set),
+            'min_length': min_length,
+            'max_length': max_length
+        }
     })
 
 
@@ -424,6 +439,593 @@ def run_bruteforce_attack(attack_id, password, method):
         })
 
 
+def run_bruteforce_hash_attack(attack_id, target_hash, algorithm, charset, min_length, max_length):
+    """Run brute force attack on hash and emit progress via SocketIO"""
+    import hashlib
+
+    charsets = {
+        'numeric': '0123456789',
+        'lower': 'abcdefghijklmnopqrstuvwxyz',
+        'upper': 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+        'alpha': 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
+        'alphanumeric': 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
+        'all': 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[]{}|;:\'",.<>?/`~'
+    }
+    char_set = list(charsets.get(charset, charsets['all']))
+
+    hash_funcs = {
+        'md5': hashlib.md5,
+        'sha1': hashlib.sha1,
+        'sha256': hashlib.sha256,
+        'sha512': hashlib.sha512
+    }
+    hash_func = hash_funcs.get(algorithm, hashlib.md5)
+
+    start_time = time.time()
+    attempts = 0
+    total = sum(len(char_set) ** l for l in range(min_length, max_length + 1))
+
+    try:
+        socketio.emit('attack_progress', {
+            'attack_id': attack_id,
+            'type': 'bruteforce',
+            'status': 'running',
+            'message': f'Starting brute force attack ({charset} charset, length {min_length}-{max_length})'
+        })
+
+        for length in range(min_length, max_length + 1):
+            socketio.emit('attack_progress', {
+                'attack_id': attack_id,
+                'type': 'bruteforce',
+                'status': 'running',
+                'current_length': length,
+                'message': f'Trying passwords of length {length}'
+            })
+
+            for attempt in itertools.product(char_set, repeat=length):
+                if attack_id not in active_attacks:
+                    return  # Attack was stopped
+
+                guess = ''.join(attempt)
+                guess_hash = hash_func(guess.encode('utf-8')).hexdigest()
+                attempts += 1
+
+                if attempts % 5000 == 0:
+                    elapsed = time.time() - start_time
+                    progress = (attempts / total) * 100 if total > 0 else 0
+                    socketio.emit('attack_progress', {
+                        'attack_id': attack_id,
+                        'type': 'bruteforce',
+                        'status': 'running',
+                        'attempts': attempts,
+                        'total': total,
+                        'progress': progress,
+                        'current': guess[:30],
+                        'speed': int(attempts / elapsed) if elapsed > 0 else 0,
+                        'message': f'Attempt {attempts:,} of {total:,}'
+                    })
+
+                if guess_hash.lower() == target_hash.lower():
+                    elapsed = time.time() - start_time
+                    socketio.emit('attack_complete', {
+                        'attack_id': attack_id,
+                        'type': 'bruteforce',
+                        'status': 'success',
+                        'password': guess,
+                        'attempts': attempts,
+                        'time': elapsed,
+                        'attempts_per_second': int(attempts / elapsed) if elapsed > 0 else 0
+                    })
+                    if attack_id in active_attacks:
+                        del active_attacks[attack_id]
+                    return
+
+        elapsed = time.time() - start_time
+        socketio.emit('attack_complete', {
+            'attack_id': attack_id,
+            'type': 'bruteforce',
+            'status': 'failed',
+            'message': 'Password not found in search space',
+            'attempts': attempts,
+            'time': elapsed,
+            'attempts_per_second': int(attempts / elapsed) if elapsed > 0 else 0
+        })
+    except Exception as e:
+        socketio.emit('attack_error', {
+            'attack_id': attack_id,
+            'type': 'bruteforce',
+            'error': str(e)
+        })
+    finally:
+        if attack_id in active_attacks:
+            del active_attacks[attack_id]
+
+
+@app.route('/api/bruteforce/stop', methods=['POST'])
+def stop_bruteforce_attack():
+    """Stop brute force attack"""
+    data = request.json
+    attack_id = data.get('attack_id', '')
+
+    if attack_id in active_attacks:
+        del active_attacks[attack_id]
+        return jsonify({'status': 'stopped'})
+    return jsonify({'error': 'Attack not found'}), 404
+
+
+# ============== MASK ATTACK ==============
+
+@app.route('/api/mask/attack', methods=['POST'])
+def mask_attack():
+    """Start mask attack"""
+    data = request.json
+    target_hash = data.get('hash', '')
+    algorithm = data.get('algorithm', None)
+    mask = data.get('mask', '?d?d?d?d')
+
+    if not target_hash:
+        return jsonify({'error': 'Hash is required'}), 400
+
+    # Auto-detect algorithm
+    if not algorithm:
+        length = len(target_hash)
+        hash_map = {32: 'md5', 40: 'sha1', 64: 'sha256', 128: 'sha512'}
+        algorithm = hash_map.get(length, 'md5')
+
+    # Calculate total combinations
+    placeholders = {
+        '?d': '0123456789',
+        '?l': 'abcdefghijklmnopqrstuvwxyz',
+        '?u': 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+        '?s': '!@#$%^&*()-_=+[]{}|;:\'",.<>?/`~',
+        '?a': 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[]{}|;:\'",.<>?/`~'
+    }
+
+    total = 1
+    i = 0
+    while i < len(mask):
+        if i + 1 < len(mask) and mask[i:i+2] in placeholders:
+            total *= len(placeholders[mask[i:i+2]])
+            i += 2
+        else:
+            i += 1
+
+    # Start attack in background thread
+    attack_id = f"mask_{int(time.time())}"
+    thread = threading.Thread(
+        target=run_mask_attack,
+        args=(attack_id, target_hash, algorithm, mask)
+    )
+    thread.daemon = True
+    thread.start()
+    active_attacks[attack_id] = thread
+
+    return jsonify({
+        'attack_id': attack_id,
+        'status': 'started',
+        'estimates': {
+            'total_combinations': total,
+            'mask': mask
+        }
+    })
+
+
+def run_mask_attack(attack_id, target_hash, algorithm, mask):
+    """Run mask attack and emit progress via SocketIO"""
+    import hashlib
+
+    placeholders = {
+        '?d': '0123456789',
+        '?l': 'abcdefghijklmnopqrstuvwxyz',
+        '?u': 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+        '?s': '!@#$%^&*()-_=+[]{}|;:\'",.<>?/`~',
+        '?a': 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[]{}|;:\'",.<>?/`~'
+    }
+
+    hash_funcs = {
+        'md5': hashlib.md5,
+        'sha1': hashlib.sha1,
+        'sha256': hashlib.sha256,
+        'sha512': hashlib.sha512
+    }
+    hash_func = hash_funcs.get(algorithm, hashlib.md5)
+
+    # Parse mask into character sets
+    char_sets = []
+    i = 0
+    while i < len(mask):
+        if i + 1 < len(mask) and mask[i:i+2] in placeholders:
+            char_sets.append(list(placeholders[mask[i:i+2]]))
+            i += 2
+        else:
+            char_sets.append([mask[i]])
+            i += 1
+
+    total = 1
+    for cs in char_sets:
+        total *= len(cs)
+
+    start_time = time.time()
+    attempts = 0
+
+    try:
+        socketio.emit('attack_progress', {
+            'attack_id': attack_id,
+            'type': 'mask',
+            'status': 'running',
+            'message': f'Starting mask attack with pattern: {mask}'
+        })
+
+        for combo in itertools.product(*char_sets):
+            if attack_id not in active_attacks:
+                return  # Attack was stopped
+
+            guess = ''.join(combo)
+            guess_hash = hash_func(guess.encode('utf-8')).hexdigest()
+            attempts += 1
+
+            if attempts % 5000 == 0:
+                elapsed = time.time() - start_time
+                progress = (attempts / total) * 100 if total > 0 else 0
+                socketio.emit('attack_progress', {
+                    'attack_id': attack_id,
+                    'type': 'mask',
+                    'status': 'running',
+                    'attempts': attempts,
+                    'total': total,
+                    'progress': progress,
+                    'current': guess,
+                    'speed': int(attempts / elapsed) if elapsed > 0 else 0,
+                    'message': f'Attempt {attempts:,} of {total:,}'
+                })
+
+            if guess_hash.lower() == target_hash.lower():
+                elapsed = time.time() - start_time
+                socketio.emit('attack_complete', {
+                    'attack_id': attack_id,
+                    'type': 'mask',
+                    'status': 'success',
+                    'password': guess,
+                    'attempts': attempts,
+                    'time': elapsed,
+                    'attempts_per_second': int(attempts / elapsed) if elapsed > 0 else 0
+                })
+                if attack_id in active_attacks:
+                    del active_attacks[attack_id]
+                return
+
+        elapsed = time.time() - start_time
+        socketio.emit('attack_complete', {
+            'attack_id': attack_id,
+            'type': 'mask',
+            'status': 'failed',
+            'message': 'Password not found with given mask',
+            'attempts': attempts,
+            'time': elapsed,
+            'attempts_per_second': int(attempts / elapsed) if elapsed > 0 else 0
+        })
+    except Exception as e:
+        socketio.emit('attack_error', {
+            'attack_id': attack_id,
+            'type': 'mask',
+            'error': str(e)
+        })
+    finally:
+        if attack_id in active_attacks:
+            del active_attacks[attack_id]
+
+
+@app.route('/api/mask/stop', methods=['POST'])
+def stop_mask_attack():
+    """Stop mask attack"""
+    data = request.json
+    attack_id = data.get('attack_id', '')
+
+    if attack_id in active_attacks:
+        del active_attacks[attack_id]
+        return jsonify({'status': 'stopped'})
+    return jsonify({'error': 'Attack not found'}), 404
+
+
+# ============== RAINBOW TABLE LOOKUP ==============
+
+@app.route('/api/rainbow/lookup', methods=['POST'])
+def rainbow_lookup():
+    """Lookup hash in rainbow tables"""
+    import hashlib
+    import urllib.request
+    import urllib.error
+    import json as json_lib
+
+    data = request.json
+    target_hash = data.get('hash', '')
+    algorithm = data.get('algorithm', None)
+    use_online = data.get('use_online', True)
+
+    if not target_hash:
+        return jsonify({'error': 'Hash is required'}), 400
+
+    # Auto-detect algorithm
+    if not algorithm:
+        length = len(target_hash)
+        hash_map = {32: 'md5', 40: 'sha1', 64: 'sha256', 128: 'sha512'}
+        algorithm = hash_map.get(length, 'md5')
+
+    results = {
+        'hash': target_hash,
+        'algorithm': algorithm,
+        'found': False,
+        'password': None,
+        'sources': []
+    }
+
+    # Local rainbow table (common passwords)
+    common_passwords = [
+        'password', '123456', '12345678', 'qwerty', 'abc123', 'monkey', '1234567',
+        'letmein', 'trustno1', 'dragon', 'baseball', 'iloveyou', 'master', 'sunshine',
+        'ashley', 'bailey', 'shadow', '123123', '654321', 'superman', 'qazwsx',
+        'michael', 'football', 'password1', 'password123', 'welcome', 'jesus',
+        'ninja', 'mustang', 'password!', 'admin', 'admin123', 'root', 'toor',
+        'pass', 'test', 'guest', 'master', 'changeme', 'hello', 'love', '1234',
+        '12345', '123456789', '1234567890', '0000', '1111', '1212', '7777', '2024'
+    ]
+
+    hash_funcs = {
+        'md5': hashlib.md5,
+        'sha1': hashlib.sha1,
+        'sha256': hashlib.sha256,
+        'sha512': hashlib.sha512
+    }
+    hash_func = hash_funcs.get(algorithm, hashlib.md5)
+
+    # Check local table
+    for pwd in common_passwords:
+        if hash_func(pwd.encode('utf-8')).hexdigest().lower() == target_hash.lower():
+            results['found'] = True
+            results['password'] = pwd
+            results['sources'].append('Local rainbow table')
+            return jsonify(results)
+
+    # Try online lookup if enabled
+    if use_online and algorithm == 'md5':
+        try:
+            # Use md5decrypt.net API (free tier)
+            url = f'https://md5decrypt.net/Api/api.php?hash={target_hash}&hash_type=md5&email=demo@demo.com&code=demo'
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, timeout=5) as response:
+                result = response.read().decode('utf-8')
+                if result and result != target_hash and 'ERROR' not in result.upper():
+                    results['found'] = True
+                    results['password'] = result
+                    results['sources'].append('Online MD5 database')
+        except Exception:
+            pass  # Online lookup failed, continue
+
+    if not results['found']:
+        results['message'] = 'Hash not found in rainbow tables. The password may be unique or complex.'
+
+    return jsonify(results)
+
+
+# ============== RULE-BASED ATTACK ==============
+
+@app.route('/api/rules/preview', methods=['POST'])
+def preview_rules():
+    """Preview rule transformations"""
+    data = request.json
+    base_word = data.get('base_word', '')
+    rules = data.get('rules', {})
+
+    if not base_word:
+        return jsonify({'error': 'Base word is required'}), 400
+
+    candidates = generate_rule_candidates(base_word, rules)
+    return jsonify({
+        'base_word': base_word,
+        'candidates': candidates[:100],  # Limit preview to 100
+        'total': len(candidates)
+    })
+
+
+@app.route('/api/rules/attack', methods=['POST'])
+def rules_attack():
+    """Start rule-based attack"""
+    data = request.json
+    target_hash = data.get('hash', '')
+    algorithm = data.get('algorithm', None)
+    base_word = data.get('base_word', '')
+    rules = data.get('rules', {})
+
+    if not target_hash:
+        return jsonify({'error': 'Hash is required'}), 400
+    if not base_word:
+        return jsonify({'error': 'Base word is required'}), 400
+
+    # Auto-detect algorithm
+    if not algorithm:
+        length = len(target_hash)
+        hash_map = {32: 'md5', 40: 'sha1', 64: 'sha256', 128: 'sha512'}
+        algorithm = hash_map.get(length, 'md5')
+
+    candidates = generate_rule_candidates(base_word, rules)
+
+    # Start attack in background thread
+    attack_id = f"rules_{int(time.time())}"
+    thread = threading.Thread(
+        target=run_rules_attack,
+        args=(attack_id, target_hash, algorithm, candidates)
+    )
+    thread.daemon = True
+    thread.start()
+    active_attacks[attack_id] = thread
+
+    return jsonify({
+        'attack_id': attack_id,
+        'status': 'started',
+        'estimates': {
+            'total_candidates': len(candidates),
+            'base_word': base_word
+        }
+    })
+
+
+def generate_rule_candidates(base_word, rules):
+    """Generate password candidates based on rules"""
+    candidates = set()
+    candidates.add(base_word)
+
+    # Case variations
+    if rules.get('case', True):
+        candidates.add(base_word.lower())
+        candidates.add(base_word.upper())
+        candidates.add(base_word.capitalize())
+        candidates.add(base_word.swapcase())
+
+    # Leet speak
+    if rules.get('leet', True):
+        leet_map = {'a': '@', 'e': '3', 'i': '1', 'o': '0', 's': '$', 't': '7', 'l': '1'}
+        leet_word = base_word.lower()
+        for char, replacement in leet_map.items():
+            leet_word = leet_word.replace(char, replacement)
+        candidates.add(leet_word)
+        candidates.add(leet_word.capitalize())
+
+    # Append numbers
+    if rules.get('append_numbers', True):
+        numbers = ['1', '12', '123', '1234', '12345', '2024', '2023', '2022', '01', '99', '69', '007']
+        for base in list(candidates):
+            for num in numbers:
+                candidates.add(base + num)
+
+    # Append symbols
+    if rules.get('append_symbols', True):
+        symbols = ['!', '!!', '@', '#', '$', '!@#', '!@#$', '*']
+        for base in list(candidates):
+            for sym in symbols:
+                candidates.add(base + sym)
+
+    # Prepend patterns
+    if rules.get('prepend', True):
+        prepends = ['123', '!', '@', '1', '12']
+        for base in list(candidates):
+            for pre in prepends:
+                candidates.add(pre + base)
+
+    # Reverse
+    if rules.get('reverse', False):
+        for base in list(candidates):
+            candidates.add(base[::-1])
+
+    # Duplicate
+    if rules.get('duplicate', False):
+        for base in list(candidates):
+            candidates.add(base + base)
+            candidates.add(base + base[::-1])
+
+    # Toggle case at positions
+    if rules.get('toggle', False):
+        for base in list(candidates):
+            if len(base) > 0:
+                candidates.add(base[0].upper() + base[1:].lower() if len(base) > 1 else base.upper())
+            if len(base) > 1:
+                toggled = ''.join(c.upper() if i % 2 == 0 else c.lower() for i, c in enumerate(base))
+                candidates.add(toggled)
+
+    return list(candidates)
+
+
+def run_rules_attack(attack_id, target_hash, algorithm, candidates):
+    """Run rule-based attack and emit progress via SocketIO"""
+    import hashlib
+
+    hash_funcs = {
+        'md5': hashlib.md5,
+        'sha1': hashlib.sha1,
+        'sha256': hashlib.sha256,
+        'sha512': hashlib.sha512
+    }
+    hash_func = hash_funcs.get(algorithm, hashlib.md5)
+
+    total = len(candidates)
+    start_time = time.time()
+
+    try:
+        socketio.emit('attack_progress', {
+            'attack_id': attack_id,
+            'type': 'rules',
+            'status': 'running',
+            'message': f'Starting rule-based attack with {total} candidates'
+        })
+
+        for i, guess in enumerate(candidates):
+            if attack_id not in active_attacks:
+                return  # Attack was stopped
+
+            guess_hash = hash_func(guess.encode('utf-8')).hexdigest()
+
+            if (i + 1) % 100 == 0:
+                elapsed = time.time() - start_time
+                progress = ((i + 1) / total) * 100
+                socketio.emit('attack_progress', {
+                    'attack_id': attack_id,
+                    'type': 'rules',
+                    'status': 'running',
+                    'attempts': i + 1,
+                    'total': total,
+                    'progress': progress,
+                    'current': guess[:30],
+                    'speed': int((i + 1) / elapsed) if elapsed > 0 else 0,
+                    'message': f'Testing candidate {i + 1:,} of {total:,}'
+                })
+
+            if guess_hash.lower() == target_hash.lower():
+                elapsed = time.time() - start_time
+                socketio.emit('attack_complete', {
+                    'attack_id': attack_id,
+                    'type': 'rules',
+                    'status': 'success',
+                    'password': guess,
+                    'attempts': i + 1,
+                    'time': elapsed,
+                    'attempts_per_second': int((i + 1) / elapsed) if elapsed > 0 else 0
+                })
+                if attack_id in active_attacks:
+                    del active_attacks[attack_id]
+                return
+
+        elapsed = time.time() - start_time
+        socketio.emit('attack_complete', {
+            'attack_id': attack_id,
+            'type': 'rules',
+            'status': 'failed',
+            'message': 'Password not found with given rules',
+            'attempts': total,
+            'time': elapsed,
+            'attempts_per_second': int(total / elapsed) if elapsed > 0 else 0
+        })
+    except Exception as e:
+        socketio.emit('attack_error', {
+            'attack_id': attack_id,
+            'type': 'rules',
+            'error': str(e)
+        })
+    finally:
+        if attack_id in active_attacks:
+            del active_attacks[attack_id]
+
+
+@app.route('/api/rules/stop', methods=['POST'])
+def stop_rules_attack():
+    """Stop rule-based attack"""
+    data = request.json
+    attack_id = data.get('attack_id', '')
+
+    if attack_id in active_attacks:
+        del active_attacks[attack_id]
+        return jsonify({'status': 'stopped'})
+    return jsonify({'error': 'Attack not found'}), 404
+
+
 if __name__ == '__main__':
     import os
     port = int(os.environ.get('PORT', 5001))
@@ -432,7 +1034,7 @@ if __name__ == '__main__':
     debug = os.environ.get('FLASK_ENV') == 'development'
     
     print("=" * 60)
-    print("Password Cracking Simulation - Web Application")
+    print("Password Security Lab - Web Application")
     print("=" * 60)
     print(f"Starting server on http://{host}:{port}")
     print("Press Ctrl+C to stop")

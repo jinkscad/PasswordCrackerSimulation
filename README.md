@@ -2,13 +2,13 @@
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
+![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.7+-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-orange.svg)
 
-**Comprehensive Password Security Analysis & Educational Tool**
+**Educational Password Security Simulation Tool**
 
-[Live Demo](https://passcheck-pro.onrender.com) • [Features](#-features) • [Quick Start](#-quick-start) • [Deployment](#-deployment)
+[Live Demo](https://passcheck-pro.onrender.com) | [Quick Start](#quick-start) | [Features](#features)
 
 </div>
 
@@ -16,101 +16,89 @@
 
 ## Overview
 
-A professional web application for analyzing password security, checking breach exposure, and demonstrating password attack methodologies. Built for educational purposes to promote better password security practices.
+An educational web application for learning about password security through interactive simulations of various attack methods. Understand why strong passwords matter by seeing how weak ones can be cracked.
 
 ---
 
 ## Features
 
-### Password Breach Checker
-- **Real breach data** from Have I Been Pwned API
-- **Privacy-focused** k-anonymity model (only first 5 hash chars sent)
-- **Visual breach timeline** showing when passwords were leaked
-- **Risk assessment** with color-coded indicators
-- **Actionable recommendations**
-
 ### Password Strength Analyzer
-- Comprehensive strength scoring (0-100)
-- Character composition analysis
-- Entropy calculation
-- Common pattern detection
-- Real-time feedback
+Advanced analysis inspired by zxcvbn (used by Dropbox, GitHub):
+- **Common password detection** - checks against 1000+ leaked passwords
+- **Keyboard pattern detection** - qwerty, asdfgh, 1qaz2wsx
+- **Leet speak detection** - recognizes p@ssw0rd as "password"
+- **Sequential/repeated character detection**
+- **Real entropy calculation** - mathematically accurate
+- **Crack time estimates** - based on 10B guesses/sec (modern GPU)
+- **Score breakdown** - see exactly how your score is calculated
 
 ### Hash Generator
-- Support for MD5, SHA1, SHA256, SHA512
-- Quick hash generation for testing
+Generate hashes for testing:
+- MD5, SHA1, SHA256, SHA512
 - Copy-friendly output
 
-### Dictionary Attack Simulator
-- **500+ password dictionary** with variations
-- **Password variations** (substitutions, case changes, patterns)
-- **Pattern matching** (Password123, password@123, etc.)
-- **Pause/Resume/Stop** controls
-- **Real-time progress** with WebSocket updates
-- **Detailed statistics** and tested passwords list
+### Password Breach Checker
+- Real breach data from Have I Been Pwned API
+- Privacy-focused k-anonymity (only 5 hash chars sent)
+- Visual breach timeline
+
+### Dictionary Attack
+- 500+ common passwords with variations
+- Leet speak substitutions and pattern matching
+- Pause/Resume/Stop controls
+- Real-time WebSocket progress
+
+### Brute Force Attack
+- Tries every character combination
+- Configurable character sets (numeric, alpha, alphanumeric, all)
+- Adjustable length range
+- Real-time progress and speed stats
+
+### Mask Attack
+Hashcat-style pattern-based attack:
+- `?d` = digit, `?l` = lowercase, `?u` = uppercase, `?s` = symbol
+- Preset patterns for common formats (PINs, name+year)
+- Example: `?u?l?l?l?d?d?d?d` matches "John2024"
+
+### Rainbow Table Lookup
+- Instant hash lookup in pre-computed tables
+- Local common password database
+- Optional online MD5 lookup
+
+### Rule-based Attack
+Apply transformations to base words:
+- Case variations
+- Leet speak (a->@, e->3)
+- Append numbers/symbols
+- Prepend patterns
+- Reverse, duplicate, toggle case
+- Preview generated candidates before attacking
 
 ---
 
 ## Quick Start
 
-### Prerequisites
-- Python 3.7+
-- pip
-
-### Installation
-
 ```bash
-# Clone repository
+# Clone and enter directory
 git clone https://github.com/jinkscad/PasswordCrackerSimulation.git
 cd PasswordCrackerSimulation
 
-# Create virtual environment
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
 # Install dependencies
 pip install -r requirements.txt
-```
 
-### Run Locally
-
-```bash
-# Start the web server
+# Run the app
 python app.py
 
-# Open browser
-# http://localhost:5001
+# Open http://localhost:5001
 ```
-
-### CLI Usage
-
-```bash
-# Analyze password strength
-python main.py analyze --password "MyP@ssw0rd"
-
-# Generate hash
-python main.py hash --password "test" --algorithm md5
-
-# Dictionary attack
-python main.py dictionary
-```
-
----
-
-## Live Demo
-
-**Live Application:** [https://passcheck-pro.onrender.com](https://passcheck-pro.onrender.com)
-
-Or run locally following the Quick Start guide above.
 
 ---
 
 ## Tech Stack
 
 - **Backend:** Flask, Flask-SocketIO
-- **Frontend:** HTML5, CSS3, JavaScript (Vanilla)
-- **APIs:** Have I Been Pwned API
-- **Python Libraries:** requests, colorama, tqdm
+- **Frontend:** Vanilla HTML/CSS/JavaScript
+- **APIs:** Have I Been Pwned
 
 ---
 
@@ -118,47 +106,27 @@ Or run locally following the Quick Start guide above.
 
 ```
 PasswordCrackerSimulation/
-├── app.py                 # Flask web application
-├── main.py                # CLI entry point
-├── requirements.txt       # Dependencies
+├── app.py                    # Flask web app + API endpoints
+├── main.py                   # CLI entry point
+├── requirements.txt
 ├── src/
-│   ├── breach_checker.py  # Breach checking with HIBP API
-│   ├── dictionary_attack.py  # Dictionary attack simulator
-│   ├── brute_force.py     # Brute force simulator
-│   └── utils.py           # Utilities (analyzer, stats)
+│   ├── utils.py              # Password analyzer
+│   ├── dictionary_attack.py  # Dictionary attack engine
+│   └── brute_force.py        # Brute force engine
 ├── templates/
-│   └── index.html         # Web app UI
+│   └── index.html            # Web UI
 └── static/
-    ├── css/style.css      # Styling
-    └── js/app.js          # Frontend logic
+    ├── css/style.css
+    └── js/app.js
 ```
-
----
-
-## Deployment
-
-### Render (Recommended)
-
-1. Connect GitHub repository to Render
-2. Create new Web Service
-3. Configure:
-   - **Build Command:** `pip install -r requirements.txt`
-   - **Start Command:** `python app.py`
-   - **Environment Variables:**
-     - `FLASK_ENV=production`
-     - `PORT=10000`
-     - `HOST=0.0.0.0`
-
-See [DEPLOY.md](DEPLOY.md) for detailed deployment instructions.
 
 ---
 
 ## Security & Privacy
 
-- **k-Anonymity Model:** Only first 5 characters of password hash sent to HIBP API
-- **No Password Storage:** Passwords are never stored or logged
-- **Local Hashing:** All hashing done client-side before API calls
-- **HTTPS Required:** All deployments use HTTPS encryption
+- **k-Anonymity:** Only first 5 chars of hash sent to breach API
+- **No Storage:** Passwords never stored or logged
+- **Local Processing:** All analysis done locally
 
 ---
 
@@ -166,61 +134,18 @@ See [DEPLOY.md](DEPLOY.md) for detailed deployment instructions.
 
 **Educational Purpose Only**
 
-This tool is designed for:
-- Learning password security principles
-- Demonstrating attack methodologies
-- Promoting better security practices
-
-**Do NOT use for:**
-- Unauthorized access attempts
-- Cracking passwords without permission
-- Any illegal activities
-
-Always ensure you have explicit permission before testing security.
-
----
-
-## Key Learnings
-
-- **Password Length Matters:** Each character exponentially increases security
-- **Complexity is Key:** Mixing character types significantly improves strength
-- **Breach Exposure:** Common passwords are highly vulnerable
-- **Unique Passwords:** Random, unique passwords resist dictionary attacks
-- **Modern Hashing:** Use bcrypt/Argon2 instead of MD5/SHA1
-
----
-
-## Contribution Policy
-
-To keep the educational demo authentic and avoid unvetted changes, **direct commits, pushes, and pull requests are limited to @jinkscad only**.  
-If you would like to experiment with the project:
-
-- Fork the repository to your own account
-- Work on the forked copy for personal or educational use
-- Do **not** open pull requests or attempt to push to this canonical repo
-
-The repository now includes an automated GitHub Action (`Owner Write Access Guard`) that rejects pushes/PRs from any other actor. Combine this with branch protection on `main` to enforce the rule end-to-end.
+This tool demonstrates password security concepts. Do NOT use for unauthorized access or illegal activities. Always obtain permission before security testing.
 
 ---
 
 ## License
 
-Educational use only. Use responsibly and ethically.
-
----
-
-## Resources
-
-- [Have I Been Pwned](https://haveibeenpwned.com/) - Breach database
-- [OWASP Password Guidelines](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)
-- [NIST Password Guidelines](https://pages.nist.gov/800-63-3/sp800-63b.html)
+MIT License - Educational use only. Use responsibly.
 
 ---
 
 <div align="center">
 
-**Remember: Strong passwords are your first line of defense.**
-
-Made for security education
+**Strong passwords are your first line of defense.**
 
 </div>

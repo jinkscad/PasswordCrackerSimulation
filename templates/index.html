@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Password Cracking Simulation - Educational Tool</title>
+    <title>Password Security Lab - Educational Tool</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,7 +14,7 @@
         <!-- Header -->
         <header class="header">
             <div class="header-content">
-                <h1 class="logo">Password Cracker</h1>
+                <h1 class="logo">Password Security Lab</h1>
                 <p class="subtitle">Educational Security Simulation Tool</p>
             </div>
         </header>
@@ -25,6 +25,10 @@
             <button class="tab-btn" data-tab="hash">Hash Generator</button>
             <button class="tab-btn" data-tab="breach">Breach Checker</button>
             <button class="tab-btn" data-tab="dictionary">Dictionary Attack</button>
+            <button class="tab-btn" data-tab="bruteforce">Brute Force</button>
+            <button class="tab-btn" data-tab="mask">Mask Attack</button>
+            <button class="tab-btn" data-tab="rainbow">Rainbow Table</button>
+            <button class="tab-btn" data-tab="rules">Rule-based</button>
         </div>
 
         <!-- Tab Content -->
@@ -32,9 +36,12 @@
             <!-- Password Analyzer Tab -->
             <div id="analyzer" class="tab-pane active">
                 <div class="card">
-                    <h2>Password Strength Analyzer</h2>
+                    <div class="card-header">
+                        <h2>Password Strength Analyzer</h2>
+                        <button class="info-btn" onclick="showInfo('analyzer')">?</button>
+                    </div>
                     <p class="card-description">Analyze the strength and security of your password</p>
-                    
+
                     <div class="form-group">
                         <label for="analyze-password">Enter Password</label>
                         <div class="input-wrapper">
@@ -46,7 +53,22 @@
                         <button class="btn btn-primary" onclick="analyzePassword()">Analyze</button>
                     </div>
 
-                    <div id="analyzer-results" class="results hidden"></div>
+                    <div id="analyzer-results" class="results hidden">
+                        <!-- Score and Crack Time -->
+                        <div id="analyzer-score" class="analyzer-score-section"></div>
+
+                        <!-- Character Composition -->
+                        <div id="analyzer-composition" class="analyzer-section"></div>
+
+                        <!-- Warnings -->
+                        <div id="analyzer-warnings" class="analyzer-section"></div>
+
+                        <!-- Suggestions -->
+                        <div id="analyzer-suggestions" class="analyzer-section"></div>
+
+                        <!-- Score Breakdown -->
+                        <div id="analyzer-breakdown" class="analyzer-section"></div>
+                    </div>
                 </div>
             </div>
 
@@ -112,9 +134,12 @@
             <!-- Dictionary Attack Tab -->
             <div id="dictionary" class="tab-pane">
                 <div class="card">
-                    <h2>Dictionary Attack Simulator</h2>
+                    <div class="card-header">
+                        <h2>Dictionary Attack Simulator</h2>
+                        <button class="info-btn" onclick="showInfo('dictionary')">?</button>
+                    </div>
                     <p class="card-description">Crack passwords using a dictionary of common passwords</p>
-                    
+
                     <div class="form-group">
                         <label for="dict-hash">Hashed Password</label>
                         <input type="text" id="dict-hash" class="input" placeholder="Enter MD5/SHA1/SHA256/SHA512 hash">
@@ -159,6 +184,262 @@
                     <div id="dict-statistics" class="results hidden"></div>
                 </div>
             </div>
+
+            <!-- Brute Force Attack Tab -->
+            <div id="bruteforce" class="tab-pane">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Brute Force Attack Simulator</h2>
+                        <button class="info-btn" onclick="showInfo('bruteforce')">?</button>
+                    </div>
+                    <p class="card-description">Try every possible character combination to crack a password</p>
+
+                    <div class="form-group">
+                        <label for="brute-hash">Hashed Password</label>
+                        <input type="text" id="brute-hash" class="input" placeholder="Enter MD5/SHA1/SHA256/SHA512 hash">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="brute-algorithm">Hash Algorithm</label>
+                        <select id="brute-algorithm" class="input">
+                            <option value="">Auto-detect</option>
+                            <option value="md5">MD5</option>
+                            <option value="sha1">SHA1</option>
+                            <option value="sha256">SHA256</option>
+                            <option value="sha512">SHA512</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="brute-charset">Character Set</label>
+                        <select id="brute-charset" class="input">
+                            <option value="numeric">Numeric only (0-9)</option>
+                            <option value="lower">Lowercase (a-z)</option>
+                            <option value="upper">Uppercase (A-Z)</option>
+                            <option value="alpha">Alphabetic (a-z, A-Z)</option>
+                            <option value="alphanumeric">Alphanumeric (a-z, A-Z, 0-9)</option>
+                            <option value="all" selected>All printable characters</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="brute-min-length">Min Length</label>
+                        <input type="number" id="brute-min-length" class="input" value="1" min="1" max="8">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="brute-max-length">Max Length</label>
+                        <input type="number" id="brute-max-length" class="input" value="4" min="1" max="8">
+                        <small style="color: var(--text-muted); display: block; margin-top: 0.5rem;">
+                            Warning: Lengths > 6 with full charset can take extremely long
+                        </small>
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button class="btn btn-danger" onclick="startBruteForceAttack()">Start Attack</button>
+                        <button class="btn btn-secondary" onclick="stopBruteForceAttack()" id="stop-brute-btn" style="display: none;">Stop</button>
+                    </div>
+
+                    <div id="brute-estimates" class="results hidden"></div>
+                    <div id="brute-progress" class="progress-container hidden">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="brute-progress-fill"></div>
+                        </div>
+                        <div class="progress-text" id="brute-progress-text">Starting attack...</div>
+                    </div>
+                    <div id="brute-results" class="results hidden"></div>
+                </div>
+            </div>
+
+            <!-- Mask Attack Tab -->
+            <div id="mask" class="tab-pane">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Mask Attack Simulator</h2>
+                        <button class="info-btn" onclick="showInfo('mask')">?</button>
+                    </div>
+                    <p class="card-description">Use patterns/masks to target specific password structures (like Hashcat)</p>
+
+                    <div class="form-group">
+                        <label for="mask-hash">Hashed Password</label>
+                        <input type="text" id="mask-hash" class="input" placeholder="Enter MD5/SHA1/SHA256/SHA512 hash">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="mask-algorithm">Hash Algorithm</label>
+                        <select id="mask-algorithm" class="input">
+                            <option value="">Auto-detect</option>
+                            <option value="md5">MD5</option>
+                            <option value="sha1">SHA1</option>
+                            <option value="sha256">SHA256</option>
+                            <option value="sha512">SHA512</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="mask-pattern">Mask Pattern</label>
+                        <input type="text" id="mask-pattern" class="input" placeholder="e.g., ?u?l?l?l?d?d?d?d" value="?d?d?d?d">
+                        <small style="color: var(--text-muted); display: block; margin-top: 0.5rem;">
+                            <strong>Placeholders:</strong> ?d = digit, ?l = lowercase, ?u = uppercase, ?s = symbol, ?a = all
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Common Presets</label>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem;">
+                            <button class="btn btn-secondary btn-sm" onclick="setMask('?d?d?d?d')">4-digit PIN</button>
+                            <button class="btn btn-secondary btn-sm" onclick="setMask('?d?d?d?d?d?d')">6-digit PIN</button>
+                            <button class="btn btn-secondary btn-sm" onclick="setMask('?u?l?l?l?l?l?d?d')">Name + 2 digits</button>
+                            <button class="btn btn-secondary btn-sm" onclick="setMask('?l?l?l?l?l?l?d?d?d?d')">Word + year</button>
+                            <button class="btn btn-secondary btn-sm" onclick="setMask('?u?l?l?l?l?l?d?d?d?s')">Complex</button>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button class="btn btn-danger" onclick="startMaskAttack()">Start Attack</button>
+                        <button class="btn btn-secondary" onclick="stopMaskAttack()" id="stop-mask-btn" style="display: none;">Stop</button>
+                    </div>
+
+                    <div id="mask-estimates" class="results hidden"></div>
+                    <div id="mask-progress" class="progress-container hidden">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="mask-progress-fill"></div>
+                        </div>
+                        <div class="progress-text" id="mask-progress-text">Starting attack...</div>
+                    </div>
+                    <div id="mask-results" class="results hidden"></div>
+                </div>
+            </div>
+
+            <!-- Rainbow Table Tab -->
+            <div id="rainbow" class="tab-pane">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Rainbow Table Lookup</h2>
+                        <button class="info-btn" onclick="showInfo('rainbow')">?</button>
+                    </div>
+                    <p class="card-description">Instantly lookup pre-computed hashes (much faster than brute force)</p>
+
+                    <div class="form-group">
+                        <label for="rainbow-hash">Hashed Password</label>
+                        <input type="text" id="rainbow-hash" class="input" placeholder="Enter MD5/SHA1/SHA256/SHA512 hash">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rainbow-algorithm">Hash Algorithm</label>
+                        <select id="rainbow-algorithm" class="input">
+                            <option value="">Auto-detect</option>
+                            <option value="md5">MD5</option>
+                            <option value="sha1">SHA1</option>
+                            <option value="sha256">SHA256</option>
+                            <option value="sha512">SHA512</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="checkbox" id="rainbow-online" checked>
+                            <span>Use online lookup services (faster, requires internet)</span>
+                        </label>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="lookupRainbowTable()">Lookup Hash</button>
+
+                    <div id="rainbow-loading" class="loading hidden">
+                        <div class="spinner"></div>
+                        <p>Searching rainbow tables...</p>
+                    </div>
+                    <div id="rainbow-results" class="results hidden"></div>
+                </div>
+            </div>
+
+            <!-- Rule-based Attack Tab -->
+            <div id="rules" class="tab-pane">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Rule-based Attack</h2>
+                        <button class="info-btn" onclick="showInfo('rules')">?</button>
+                    </div>
+                    <p class="card-description">Apply transformation rules to wordlists (like Hashcat/John rules)</p>
+
+                    <div class="form-group">
+                        <label for="rules-hash">Hashed Password</label>
+                        <input type="text" id="rules-hash" class="input" placeholder="Enter MD5/SHA1/SHA256/SHA512 hash">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rules-algorithm">Hash Algorithm</label>
+                        <select id="rules-algorithm" class="input">
+                            <option value="">Auto-detect</option>
+                            <option value="md5">MD5</option>
+                            <option value="sha1">SHA1</option>
+                            <option value="sha256">SHA256</option>
+                            <option value="sha512">SHA512</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rules-base">Base Word</label>
+                        <input type="text" id="rules-base" class="input" placeholder="Enter a base word (e.g., password, admin, love)">
+                        <small style="color: var(--text-muted); display: block; margin-top: 0.5rem;">
+                            Rules will be applied to this base word to generate candidates
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Transformation Rules</label>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.5rem; margin-top: 0.5rem;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="checkbox" id="rule-case" checked>
+                                <span>Case variations (upper, lower, capitalize)</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="checkbox" id="rule-leet" checked>
+                                <span>Leet speak (a->@, e->3, etc.)</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="checkbox" id="rule-append-numbers" checked>
+                                <span>Append numbers (1, 123, 2024)</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="checkbox" id="rule-append-symbols" checked>
+                                <span>Append symbols (!, @, #)</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="checkbox" id="rule-prepend" checked>
+                                <span>Prepend patterns (123, !)</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="checkbox" id="rule-reverse">
+                                <span>Reverse word</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="checkbox" id="rule-duplicate">
+                                <span>Duplicate word</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                                <input type="checkbox" id="rule-toggle">
+                                <span>Toggle case at positions</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button class="btn btn-danger" onclick="startRuleAttack()">Start Attack</button>
+                        <button class="btn btn-secondary" onclick="previewRules()">Preview Rules</button>
+                        <button class="btn btn-secondary" onclick="stopRuleAttack()" id="stop-rules-btn" style="display: none;">Stop</button>
+                    </div>
+
+                    <div id="rules-preview" class="results hidden"></div>
+                    <div id="rules-progress" class="progress-container hidden">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="rules-progress-fill"></div>
+                        </div>
+                        <div class="progress-text" id="rules-progress-text">Starting attack...</div>
+                    </div>
+                    <div id="rules-results" class="results hidden"></div>
+                </div>
+            </div>
         </div>
 
         <!-- Footer -->
@@ -168,6 +449,16 @@
     </div>
 
     <!-- Socket.IO -->
+    <!-- Info Modal -->
+    <div id="info-modal" class="modal hidden">
+        <div class="modal-backdrop" onclick="closeInfoModal()"></div>
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeInfoModal()">&times;</button>
+            <h2 id="modal-title"></h2>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>

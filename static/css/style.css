@@ -283,6 +283,181 @@ select.input {
     background: var(--gray-light);
 }
 
+.btn-sm {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+}
+
+/* Password Analyzer Styles */
+.analyzer-score-section {
+    margin-bottom: 1.5rem;
+}
+
+.score-details {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--bg-card);
+    border-radius: 8px;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.score-item {
+    text-align: center;
+}
+
+.score-label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
+}
+
+.score-value {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.score-value.crack-time {
+    color: var(--primary);
+}
+
+.common-password-warning {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid var(--danger);
+    color: var(--danger);
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+    text-align: center;
+    font-weight: 600;
+}
+
+.analyzer-section {
+    margin-bottom: 1rem;
+}
+
+.section-title {
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.warning-title {
+    color: var(--warning);
+}
+
+.suggestion-title {
+    color: var(--success);
+}
+
+.char-composition {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.char-badge {
+    padding: 0.5rem 1rem;
+    background: var(--bg-input);
+    border-radius: 20px;
+    font-family: monospace;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    border: 2px solid transparent;
+}
+
+.char-badge.active {
+    background: rgba(99, 102, 241, 0.2);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.warning-list, .suggestion-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.warning-list li {
+    padding: 0.5rem 0.75rem;
+    background: rgba(239, 68, 68, 0.1);
+    border-left: 3px solid var(--danger);
+    margin-bottom: 0.5rem;
+    border-radius: 0 4px 4px 0;
+    color: var(--text);
+    font-size: 0.9rem;
+}
+
+.suggestion-list li {
+    padding: 0.5rem 0.75rem;
+    background: rgba(16, 185, 129, 0.1);
+    border-left: 3px solid var(--success);
+    margin-bottom: 0.5rem;
+    border-radius: 0 4px 4px 0;
+    color: var(--text);
+    font-size: 0.9rem;
+}
+
+.score-breakdown-details {
+    background: var(--bg-card);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.score-breakdown-details summary {
+    cursor: pointer;
+    padding: 0.75rem 1rem;
+    background: var(--bg-input);
+    user-select: none;
+}
+
+.score-breakdown-details summary:hover {
+    background: var(--dark-light);
+}
+
+.breakdown-content {
+    padding: 0.5rem 1rem;
+}
+
+.breakdown-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+}
+
+.breakdown-item:last-child {
+    border-bottom: none;
+}
+
+.breakdown-item.penalty {
+    color: var(--danger);
+}
+
+.breakdown-item.bonus {
+    color: var(--success);
+}
+
+.breakdown-item.final {
+    font-weight: 700;
+    color: var(--primary);
+    margin-top: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 2px solid var(--border);
+}
+
+.breakdown-value {
+    font-weight: 600;
+    font-family: monospace;
+}
+
 /* Results */
 .results {
     margin-top: 2rem;
@@ -574,6 +749,167 @@ select.input {
 
 .pulse {
     animation: pulse 2s infinite;
+}
+
+/* Card Header with Info Button */
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.card-header h2 {
+    margin-bottom: 0;
+}
+
+.info-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--primary);
+    background: transparent;
+    color: var(--primary);
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.info-btn:hover {
+    background: var(--primary);
+    color: white;
+    transform: scale(1.1);
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    position: relative;
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 600px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: var(--bg-input);
+    color: var(--text-muted);
+    font-size: 1.5rem;
+    cursor: pointer;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    line-height: 1;
+}
+
+.modal-close:hover {
+    background: var(--danger);
+    color: white;
+}
+
+.modal-content h2 {
+    color: var(--primary);
+    margin-bottom: 1.5rem;
+    padding-right: 2rem;
+}
+
+.modal-content h3 {
+    color: var(--text);
+    margin: 1.5rem 0 0.75rem;
+    font-size: 1.1rem;
+}
+
+.modal-content p {
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+    line-height: 1.7;
+}
+
+.modal-content ul {
+    color: var(--text-muted);
+    margin-left: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.modal-content li {
+    margin-bottom: 0.5rem;
+}
+
+.modal-content code {
+    background: var(--bg-input);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-family: monospace;
+    color: var(--secondary);
+}
+
+.modal-content .example-box {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-left: 3px solid var(--primary);
+}
+
+.modal-content .example-box code {
+    display: block;
+    margin: 0.25rem 0;
 }
 
 /* Scrollbar */

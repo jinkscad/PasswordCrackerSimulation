@@ -1,6 +1,235 @@
 // Socket.IO Connection
 const socket = io();
 
+// ============== INFO MODAL ==============
+const attackInfo = {
+    analyzer: {
+        title: 'Password Strength Analyzer',
+        content: `
+            <p>The analyzer evaluates your password's security using multiple techniques inspired by <strong>zxcvbn</strong> (used by Dropbox, GitHub).</p>
+
+            <h3>What We Check</h3>
+            <ul>
+                <li><strong>Common passwords:</strong> Compared against 1000+ leaked passwords</li>
+                <li><strong>Keyboard patterns:</strong> qwerty, asdfgh, 1qaz2wsx, etc.</li>
+                <li><strong>Sequential characters:</strong> abc, 123, cba, 321</li>
+                <li><strong>Repeated characters:</strong> aaa, 111</li>
+                <li><strong>Date patterns:</strong> Years like 2024, 1990</li>
+                <li><strong>Leet speak:</strong> Detects p@ssw0rd as "password"</li>
+            </ul>
+
+            <h3>How Scoring Works</h3>
+            <p>The score (0-100) is calculated from:</p>
+            <div class="example-box">
+                <code>Base Score = Entropy / 60 * 100</code>
+                <code>Final = Base - Penalties + Bonuses</code>
+            </div>
+
+            <h3>Understanding Entropy</h3>
+            <p>Entropy measures randomness in bits. Higher = more secure.</p>
+            <ul>
+                <li><strong>&lt;28 bits:</strong> Very weak (instant crack)</li>
+                <li><strong>28-35 bits:</strong> Weak (minutes to hours)</li>
+                <li><strong>36-59 bits:</strong> Moderate (days to months)</li>
+                <li><strong>60-127 bits:</strong> Strong (years)</li>
+                <li><strong>128+ bits:</strong> Very strong (centuries)</li>
+            </ul>
+
+            <h3>Crack Time Estimate</h3>
+            <p>Based on 10 billion guesses/second (modern GPU attack speed). Real-world times vary based on:</p>
+            <ul>
+                <li>Online vs offline attacks</li>
+                <li>Hash algorithm used</li>
+                <li>Attacker's hardware</li>
+            </ul>
+
+            <h3>Tips for Strong Passwords</h3>
+            <ul>
+                <li>Use 12+ characters (16+ is better)</li>
+                <li>Mix uppercase, lowercase, numbers, symbols</li>
+                <li>Avoid dictionary words and personal info</li>
+                <li>Use a password manager!</li>
+            </ul>
+        `
+    },
+    dictionary: {
+        title: 'Dictionary Attack',
+        content: `
+            <p>A <strong>dictionary attack</strong> tries to crack passwords by testing words from a pre-made list (wordlist) of common passwords.</p>
+
+            <h3>How It Works</h3>
+            <p>1. You provide a <strong>hashed password</strong> (the encrypted version)<br>
+               2. The tool loads a list of common passwords<br>
+               3. It hashes each word and compares it to your target<br>
+               4. If there's a match, the password is cracked!</p>
+
+            <h3>What is a Hash?</h3>
+            <p>A hash is a one-way encryption. For example, "password" becomes:</p>
+            <div class="example-box">
+                <code>MD5: 5f4dcc3b5aa765d61d8327deb882cf99</code>
+                <code>SHA256: 5e884898da28047d...</code>
+            </div>
+
+            <h3>How to Use</h3>
+            <ul>
+                <li>Go to <strong>Hash Generator</strong> tab to create a hash from any password</li>
+                <li>Paste the hash here and click "Start Attack"</li>
+                <li>The tool will try common passwords + variations</li>
+            </ul>
+
+            <h3>Why It Works</h3>
+            <p>Most people use simple, common passwords. Dictionary attacks are fast because they only try likely passwords instead of every possible combination.</p>
+        `
+    },
+    bruteforce: {
+        title: 'Brute Force Attack',
+        content: `
+            <p>A <strong>brute force attack</strong> tries <em>every possible combination</em> of characters until it finds the password.</p>
+
+            <h3>How It Works</h3>
+            <p>It systematically tries: a, b, c... then aa, ab, ac... then aaa, aab, and so on until it finds a match.</p>
+
+            <h3>Settings Explained</h3>
+            <ul>
+                <li><strong>Character Set:</strong> What characters to try
+                    <ul>
+                        <li>Numeric: 0-9 (10 chars) - fastest</li>
+                        <li>Lowercase: a-z (26 chars)</li>
+                        <li>All: letters + numbers + symbols (95 chars) - slowest</li>
+                    </ul>
+                </li>
+                <li><strong>Length:</strong> Password length range to try</li>
+            </ul>
+
+            <h3>Time Estimates</h3>
+            <div class="example-box">
+                <code>4-digit PIN: ~10,000 tries (instant)</code>
+                <code>4-char password (all): ~81 million tries</code>
+                <code>8-char password (all): ~6 quadrillion tries</code>
+            </div>
+
+            <h3>When to Use</h3>
+            <p>Best for short passwords or when you know the character set (like PINs). Not practical for long, complex passwords.</p>
+        `
+    },
+    mask: {
+        title: 'Mask Attack',
+        content: `
+            <p>A <strong>mask attack</strong> is a smarter brute force. Instead of trying everything, you define a <em>pattern</em> the password follows.</p>
+
+            <h3>Mask Placeholders</h3>
+            <div class="example-box">
+                <code>?d = digit (0-9)</code>
+                <code>?l = lowercase letter (a-z)</code>
+                <code>?u = uppercase letter (A-Z)</code>
+                <code>?s = symbol (!@#$%...)</code>
+                <code>?a = any character</code>
+            </div>
+
+            <h3>Example Masks</h3>
+            <ul>
+                <li><code>?d?d?d?d</code> = 4-digit PIN (0000-9999)</li>
+                <li><code>?u?l?l?l?l?l</code> = Name like "Michael"</li>
+                <li><code>?u?l?l?l?d?d?d?d</code> = Name + year like "John2024"</li>
+                <li><code>?l?l?l?l?l?l?s</code> = 6 letters + symbol</li>
+            </ul>
+
+            <h3>Why It's Powerful</h3>
+            <p>If you know someone uses a name + 4 digits, you can crack it much faster than pure brute force by only trying that pattern.</p>
+
+            <h3>How to Use</h3>
+            <p>1. Guess the password structure<br>
+               2. Write a mask using placeholders<br>
+               3. The tool tries all combinations matching that pattern</p>
+        `
+    },
+    rainbow: {
+        title: 'Rainbow Table Lookup',
+        content: `
+            <p>A <strong>rainbow table</strong> is a pre-computed database of passwords and their hashes. Instead of calculating hashes, you just look them up!</p>
+
+            <h3>How It Works</h3>
+            <p>1. Someone pre-computes millions of password hashes<br>
+               2. They store them in a searchable table<br>
+               3. You paste a hash, and it instantly finds the match</p>
+
+            <h3>Speed Comparison</h3>
+            <div class="example-box">
+                <code>Brute Force: hours to years</code>
+                <code>Rainbow Table: milliseconds</code>
+            </div>
+
+            <h3>Limitations</h3>
+            <ul>
+                <li>Only works for passwords that were pre-computed</li>
+                <li>Tables can be huge (terabytes)</li>
+                <li><strong>Defeated by salting</strong> - adding random data before hashing</li>
+            </ul>
+
+            <h3>What This Tool Does</h3>
+            <p>It checks your hash against a local list of common passwords and optionally queries online hash databases.</p>
+
+            <h3>Why Salting Matters</h3>
+            <p>Modern systems add a random "salt" to passwords before hashing. This makes rainbow tables useless because each password has a unique hash.</p>
+        `
+    },
+    rules: {
+        title: 'Rule-based Attack',
+        content: `
+            <p>A <strong>rule-based attack</strong> takes a base word and applies transformations to generate password variations.</p>
+
+            <h3>How It Works</h3>
+            <p>Start with a word like "password" and apply rules:</p>
+            <div class="example-box">
+                <code>password → Password (capitalize)</code>
+                <code>password → PASSWORD (uppercase)</code>
+                <code>password → p@ssw0rd (leet speak)</code>
+                <code>password → password123 (add numbers)</code>
+                <code>password → password! (add symbol)</code>
+            </div>
+
+            <h3>Available Rules</h3>
+            <ul>
+                <li><strong>Case variations:</strong> upper, lower, capitalize</li>
+                <li><strong>Leet speak:</strong> a→@, e→3, i→1, o→0, s→$</li>
+                <li><strong>Append numbers:</strong> 1, 123, 2024, etc.</li>
+                <li><strong>Append symbols:</strong> !, @, #, !@#</li>
+                <li><strong>Prepend:</strong> add patterns at the start</li>
+                <li><strong>Reverse:</strong> drowssap</li>
+                <li><strong>Duplicate:</strong> passwordpassword</li>
+            </ul>
+
+            <h3>When to Use</h3>
+            <p>When you suspect the password is based on a word (name, pet, favorite team) with common modifications. Much faster than brute force!</p>
+
+            <h3>Tip</h3>
+            <p>Click "Preview Rules" to see all generated variations before attacking.</p>
+        `
+    }
+};
+
+function showInfo(attackType) {
+    const info = attackInfo[attackType];
+    if (!info) return;
+
+    document.getElementById('modal-title').textContent = info.title;
+    document.getElementById('modal-body').innerHTML = info.content;
+    document.getElementById('info-modal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeInfoModal() {
+    document.getElementById('info-modal').classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+// Close modal on Escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeInfoModal();
+    }
+});
+
 // Tab Management
 document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -67,39 +296,125 @@ async function analyzePassword() {
 function displayAnalysis(data, container) {
     const analysis = data.analysis;
     const strengthClass = getStrengthClass(data.strength);
-    
-    container.innerHTML = `
-        <div class="result-item">
-            <strong>Password Strength</strong>
-            <div class="strength-meter">
-                <div class="strength-bar">
-                    <div class="strength-fill ${strengthClass}" style="width: ${data.score}%"></div>
-                </div>
-                <div class="strength-label">${data.strength} (${data.score}/100)</div>
+
+    // Build the score section
+    const scoreSection = document.getElementById('analyzer-score');
+    scoreSection.innerHTML = `
+        <div class="strength-meter">
+            <div class="strength-bar">
+                <div class="strength-fill ${strengthClass}" style="width: ${data.score}%"></div>
+            </div>
+            <div class="strength-label">${data.strength} (${data.score}/100)</div>
+        </div>
+
+        <div class="score-details">
+            <div class="score-item">
+                <span class="score-label">Length</span>
+                <span class="score-value">${analysis.length} chars</span>
+            </div>
+            <div class="score-item">
+                <span class="score-label">Entropy</span>
+                <span class="score-value">${analysis.entropy.toFixed(1)} bits</span>
+            </div>
+            <div class="score-item">
+                <span class="score-label">Crack Time</span>
+                <span class="score-value crack-time">${analysis.crack_time_display || 'N/A'}</span>
             </div>
         </div>
-        <div class="result-item">
-            <strong>Length</strong>
-            ${analysis.length} characters
-        </div>
-        <div class="result-item">
-            <strong>Character Composition</strong>
-            Lowercase: ${analysis.has_lowercase ? 'Yes' : 'No'}<br>
-            Uppercase: ${analysis.has_uppercase ? 'Yes' : 'No'}<br>
-            Digits: ${analysis.has_digits ? 'Yes' : 'No'}<br>
-            Symbols: ${analysis.has_symbols ? 'Yes' : 'No'}
-        </div>
-        <div class="result-item">
-            <strong>Estimated Entropy</strong>
-            ${analysis.entropy.toFixed(1)} bits
-        </div>
-        ${analysis.common_patterns.length > 0 ? `
-            <div class="result-item result-error">
-                <strong>Warning: Common Patterns Detected</strong>
-                ${analysis.common_patterns.join('<br>')}
-            </div>
-        ` : ''}
+
+        ${analysis.is_common ? '<div class="common-password-warning">This password appears in data breaches!</div>' : ''}
     `;
+
+    // Character composition
+    const compositionSection = document.getElementById('analyzer-composition');
+    compositionSection.innerHTML = `
+        <div class="section-title">Character Composition</div>
+        <div class="char-composition">
+            <span class="char-badge ${analysis.has_lowercase ? 'active' : ''}">a-z</span>
+            <span class="char-badge ${analysis.has_uppercase ? 'active' : ''}">A-Z</span>
+            <span class="char-badge ${analysis.has_digits ? 'active' : ''}">0-9</span>
+            <span class="char-badge ${analysis.has_symbols ? 'active' : ''}">!@#</span>
+        </div>
+    `;
+
+    // Warnings
+    const warningsSection = document.getElementById('analyzer-warnings');
+    if (analysis.warnings && analysis.warnings.length > 0) {
+        warningsSection.innerHTML = `
+            <div class="section-title warning-title">Warnings</div>
+            <ul class="warning-list">
+                ${analysis.warnings.map(w => `<li>${w}</li>`).join('')}
+            </ul>
+        `;
+        warningsSection.style.display = 'block';
+    } else {
+        warningsSection.style.display = 'none';
+    }
+
+    // Suggestions
+    const suggestionsSection = document.getElementById('analyzer-suggestions');
+    if (analysis.suggestions && analysis.suggestions.length > 0) {
+        suggestionsSection.innerHTML = `
+            <div class="section-title suggestion-title">Suggestions</div>
+            <ul class="suggestion-list">
+                ${analysis.suggestions.map(s => `<li>${s}</li>`).join('')}
+            </ul>
+        `;
+        suggestionsSection.style.display = 'block';
+    } else {
+        suggestionsSection.style.display = 'none';
+    }
+
+    // Score breakdown (collapsible)
+    const breakdownSection = document.getElementById('analyzer-breakdown');
+    if (analysis.score_breakdown) {
+        const sb = analysis.score_breakdown;
+        let breakdownHtml = `
+            <details class="score-breakdown-details">
+                <summary class="section-title">Score Breakdown</summary>
+                <div class="breakdown-content">
+                    <div class="breakdown-item">
+                        <span>Base entropy score</span>
+                        <span class="breakdown-value">${sb.base_entropy_score}</span>
+                    </div>
+        `;
+
+        if (sb.penalties && sb.penalties.length > 0) {
+            sb.penalties.forEach(([reason, value]) => {
+                breakdownHtml += `
+                    <div class="breakdown-item penalty">
+                        <span>${reason}</span>
+                        <span class="breakdown-value">${value}</span>
+                    </div>
+                `;
+            });
+        }
+
+        if (sb.bonuses && sb.bonuses.length > 0) {
+            sb.bonuses.forEach(([reason, value]) => {
+                breakdownHtml += `
+                    <div class="breakdown-item bonus">
+                        <span>${reason}</span>
+                        <span class="breakdown-value">+${value}</span>
+                    </div>
+                `;
+            });
+        }
+
+        breakdownHtml += `
+                    <div class="breakdown-item final">
+                        <span>Final Score</span>
+                        <span class="breakdown-value">${sb.final_score}</span>
+                    </div>
+                </div>
+            </details>
+        `;
+        breakdownSection.innerHTML = breakdownHtml;
+        breakdownSection.style.display = 'block';
+    } else {
+        breakdownSection.style.display = 'none';
+    }
+
     container.classList.remove('hidden');
 }
 
@@ -325,42 +640,54 @@ async function generateHash() {
 // Brute Force Attack
 let currentBruteAttackId = null;
 
-async function startBruteForce() {
-    const password = document.getElementById('brute-password').value;
-    const method = document.getElementById('brute-method').value;
+async function startBruteForceAttack() {
+    const hash = document.getElementById('brute-hash').value;
+    const algorithm = document.getElementById('brute-algorithm').value || null;
+    const charset = document.getElementById('brute-charset').value;
+    const minLength = parseInt(document.getElementById('brute-min-length').value) || 1;
+    const maxLength = parseInt(document.getElementById('brute-max-length').value) || 4;
     const estimatesDiv = document.getElementById('brute-estimates');
     const progressDiv = document.getElementById('brute-progress');
     const resultsDiv = document.getElementById('brute-results');
     const stopBtn = document.getElementById('stop-brute-btn');
-    
-    if (!password) {
-        showError(resultsDiv, 'Please enter a password to crack');
+
+    if (!hash) {
+        showError(resultsDiv, 'Please enter a hash to crack');
         return;
     }
-    
+
     try {
         const response = await fetch('/api/bruteforce/attack', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ password, method })
+            body: JSON.stringify({
+                hash,
+                algorithm,
+                charset,
+                min_length: minLength,
+                max_length: maxLength
+            })
         });
-        
+
         const data = await response.json();
-        
+
         if (response.ok) {
             currentBruteAttackId = data.attack_id;
             stopBtn.style.display = 'inline-block';
-            
+
             // Show estimates
             estimatesDiv.innerHTML = `
-                <h3>Time Estimates</h3>
-                <p><strong>Total Combinations:</strong> ${data.estimates.total_combinations.toLocaleString()}</p>
-                <p><strong>Estimated Time:</strong> ${data.estimates.estimated_time}</p>
+                <div class="result-item">
+                    <strong>Attack Configuration</strong><br>
+                    Total Combinations: ${data.estimates.total_combinations.toLocaleString()}<br>
+                    Character Set Size: ${data.estimates.charset_size}<br>
+                    Length Range: ${data.estimates.min_length} - ${data.estimates.max_length}
+                </div>
             `;
             estimatesDiv.classList.remove('hidden');
-            
+
             progressDiv.classList.remove('hidden');
             resultsDiv.classList.add('hidden');
         } else {
@@ -368,6 +695,23 @@ async function startBruteForce() {
         }
     } catch (error) {
         showError(resultsDiv, 'Error starting attack: ' + error.message);
+    }
+}
+
+async function stopBruteForceAttack() {
+    if (!currentBruteAttackId) return;
+
+    try {
+        await fetch('/api/bruteforce/stop', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ attack_id: currentBruteAttackId })
+        });
+        currentBruteAttackId = null;
+        document.getElementById('stop-brute-btn').style.display = 'none';
+        document.getElementById('brute-progress').classList.add('hidden');
+    } catch (error) {
+        console.error('Error stopping attack:', error);
     }
 }
 
@@ -475,12 +819,266 @@ async function stopDictionaryAttack() {
     }
 }
 
-// Stop Attack (for brute force - dictionary has its own function)
-function stopBruteForceAttack() {
-    // Placeholder for brute force stop functionality
-    if (currentBruteAttackId) {
-        currentBruteAttackId = null;
-        document.getElementById('stop-brute-btn').style.display = 'none';
+// ============== MASK ATTACK ==============
+let currentMaskAttackId = null;
+
+function setMask(mask) {
+    document.getElementById('mask-pattern').value = mask;
+}
+
+async function startMaskAttack() {
+    const hash = document.getElementById('mask-hash').value;
+    const algorithm = document.getElementById('mask-algorithm').value || null;
+    const mask = document.getElementById('mask-pattern').value;
+    const estimatesDiv = document.getElementById('mask-estimates');
+    const progressDiv = document.getElementById('mask-progress');
+    const resultsDiv = document.getElementById('mask-results');
+    const stopBtn = document.getElementById('stop-mask-btn');
+
+    if (!hash) {
+        showError(resultsDiv, 'Please enter a hash to crack');
+        return;
+    }
+
+    if (!mask) {
+        showError(resultsDiv, 'Please enter a mask pattern');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/mask/attack', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ hash, algorithm, mask })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            currentMaskAttackId = data.attack_id;
+            stopBtn.style.display = 'inline-block';
+
+            estimatesDiv.innerHTML = `
+                <div class="result-item">
+                    <strong>Attack Configuration</strong><br>
+                    Mask: <code>${data.estimates.mask}</code><br>
+                    Total Combinations: ${data.estimates.total_combinations.toLocaleString()}
+                </div>
+            `;
+            estimatesDiv.classList.remove('hidden');
+
+            progressDiv.classList.remove('hidden');
+            resultsDiv.classList.add('hidden');
+        } else {
+            showError(resultsDiv, data.error || 'Attack failed to start');
+        }
+    } catch (error) {
+        showError(resultsDiv, 'Error starting attack: ' + error.message);
+    }
+}
+
+async function stopMaskAttack() {
+    if (!currentMaskAttackId) return;
+
+    try {
+        await fetch('/api/mask/stop', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ attack_id: currentMaskAttackId })
+        });
+        currentMaskAttackId = null;
+        document.getElementById('stop-mask-btn').style.display = 'none';
+        document.getElementById('mask-progress').classList.add('hidden');
+    } catch (error) {
+        console.error('Error stopping attack:', error);
+    }
+}
+
+// ============== RAINBOW TABLE LOOKUP ==============
+
+async function lookupRainbowTable() {
+    const hash = document.getElementById('rainbow-hash').value;
+    const algorithm = document.getElementById('rainbow-algorithm').value || null;
+    const useOnline = document.getElementById('rainbow-online').checked;
+    const loadingDiv = document.getElementById('rainbow-loading');
+    const resultsDiv = document.getElementById('rainbow-results');
+
+    if (!hash) {
+        showError(resultsDiv, 'Please enter a hash to lookup');
+        return;
+    }
+
+    loadingDiv.classList.remove('hidden');
+    resultsDiv.classList.add('hidden');
+
+    try {
+        const response = await fetch('/api/rainbow/lookup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ hash, algorithm, use_online: useOnline })
+        });
+
+        const data = await response.json();
+        loadingDiv.classList.add('hidden');
+
+        if (response.ok) {
+            if (data.found) {
+                resultsDiv.innerHTML = `
+                    <div class="result-item result-success">
+                        <strong>Hash Found!</strong><br>
+                        Password: <code style="font-size: 1.2rem;">${data.password}</code><br>
+                        Algorithm: ${data.algorithm.toUpperCase()}<br>
+                        Source: ${data.sources.join(', ')}
+                    </div>
+                `;
+            } else {
+                resultsDiv.innerHTML = `
+                    <div class="result-item result-error">
+                        <strong>Hash Not Found</strong><br>
+                        ${data.message || 'The hash was not found in any rainbow table.'}<br>
+                        Algorithm: ${data.algorithm.toUpperCase()}
+                    </div>
+                `;
+            }
+            resultsDiv.classList.remove('hidden');
+        } else {
+            showError(resultsDiv, data.error || 'Lookup failed');
+        }
+    } catch (error) {
+        loadingDiv.classList.add('hidden');
+        showError(resultsDiv, 'Error looking up hash: ' + error.message);
+    }
+}
+
+// ============== RULE-BASED ATTACK ==============
+let currentRulesAttackId = null;
+
+function getRuleSettings() {
+    return {
+        case: document.getElementById('rule-case').checked,
+        leet: document.getElementById('rule-leet').checked,
+        append_numbers: document.getElementById('rule-append-numbers').checked,
+        append_symbols: document.getElementById('rule-append-symbols').checked,
+        prepend: document.getElementById('rule-prepend').checked,
+        reverse: document.getElementById('rule-reverse').checked,
+        duplicate: document.getElementById('rule-duplicate').checked,
+        toggle: document.getElementById('rule-toggle').checked
+    };
+}
+
+async function previewRules() {
+    const baseWord = document.getElementById('rules-base').value;
+    const rules = getRuleSettings();
+    const previewDiv = document.getElementById('rules-preview');
+
+    if (!baseWord) {
+        showError(previewDiv, 'Please enter a base word');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/rules/preview', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ base_word: baseWord, rules })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            let html = `
+                <div class="result-item">
+                    <strong>Rule Preview</strong> (showing ${Math.min(100, data.total)} of ${data.total} candidates)<br><br>
+                    <div style="max-height: 300px; overflow-y: auto; font-family: monospace; font-size: 0.85rem;">
+            `;
+            data.candidates.forEach(candidate => {
+                html += `<div style="padding: 0.25rem 0;">- ${candidate}</div>`;
+            });
+            html += '</div></div>';
+            previewDiv.innerHTML = html;
+            previewDiv.classList.remove('hidden');
+        } else {
+            showError(previewDiv, data.error || 'Preview failed');
+        }
+    } catch (error) {
+        showError(previewDiv, 'Error generating preview: ' + error.message);
+    }
+}
+
+async function startRuleAttack() {
+    const hash = document.getElementById('rules-hash').value;
+    const algorithm = document.getElementById('rules-algorithm').value || null;
+    const baseWord = document.getElementById('rules-base').value;
+    const rules = getRuleSettings();
+    const progressDiv = document.getElementById('rules-progress');
+    const resultsDiv = document.getElementById('rules-results');
+    const previewDiv = document.getElementById('rules-preview');
+    const stopBtn = document.getElementById('stop-rules-btn');
+
+    if (!hash) {
+        showError(resultsDiv, 'Please enter a hash to crack');
+        return;
+    }
+
+    if (!baseWord) {
+        showError(resultsDiv, 'Please enter a base word');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/rules/attack', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ hash, algorithm, base_word: baseWord, rules })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            currentRulesAttackId = data.attack_id;
+            stopBtn.style.display = 'inline-block';
+
+            previewDiv.innerHTML = `
+                <div class="result-item">
+                    <strong>Attack Started</strong><br>
+                    Base Word: ${data.estimates.base_word}<br>
+                    Total Candidates: ${data.estimates.total_candidates.toLocaleString()}
+                </div>
+            `;
+            previewDiv.classList.remove('hidden');
+
+            progressDiv.classList.remove('hidden');
+            resultsDiv.classList.add('hidden');
+        } else {
+            showError(resultsDiv, data.error || 'Attack failed to start');
+        }
+    } catch (error) {
+        showError(resultsDiv, 'Error starting attack: ' + error.message);
+    }
+}
+
+async function stopRuleAttack() {
+    if (!currentRulesAttackId) return;
+
+    try {
+        await fetch('/api/rules/stop', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ attack_id: currentRulesAttackId })
+        });
+        currentRulesAttackId = null;
+        document.getElementById('stop-rules-btn').style.display = 'none';
+        document.getElementById('rules-progress').classList.add('hidden');
+    } catch (error) {
+        console.error('Error stopping attack:', error);
     }
 }
 
@@ -490,6 +1088,10 @@ socket.on('attack_progress', (data) => {
         updateBruteProgress(data);
     } else if (data.type === 'dictionary' && data.attack_id === currentDictAttackId) {
         updateDictProgress(data);
+    } else if (data.type === 'mask' && data.attack_id === currentMaskAttackId) {
+        updateMaskProgress(data);
+    } else if (data.type === 'rules' && data.attack_id === currentRulesAttackId) {
+        updateRulesProgress(data);
     }
 });
 
@@ -502,32 +1104,53 @@ socket.on('attack_complete', (data) => {
         showDictResults(data);
         currentDictAttackId = null;
         document.getElementById('stop-dict-btn').style.display = 'none';
+    } else if (data.type === 'mask' && data.attack_id === currentMaskAttackId) {
+        showMaskResults(data);
+        currentMaskAttackId = null;
+        document.getElementById('stop-mask-btn').style.display = 'none';
+    } else if (data.type === 'rules' && data.attack_id === currentRulesAttackId) {
+        showRulesResults(data);
+        currentRulesAttackId = null;
+        document.getElementById('stop-rules-btn').style.display = 'none';
     }
 });
 
 socket.on('attack_error', (data) => {
-    const resultsDiv = data.type === 'bruteforce' 
-        ? document.getElementById('brute-results')
-        : document.getElementById('dict-results');
-    showError(resultsDiv, data.error || 'Attack error occurred');
-    
-    if (data.type === 'bruteforce') {
-        currentBruteAttackId = null;
-        document.getElementById('stop-brute-btn').style.display = 'none';
-    } else {
-        currentDictAttackId = null;
-        document.getElementById('stop-dict-btn').style.display = 'none';
+    let resultsDiv;
+    switch (data.type) {
+        case 'bruteforce':
+            resultsDiv = document.getElementById('brute-results');
+            currentBruteAttackId = null;
+            document.getElementById('stop-brute-btn').style.display = 'none';
+            break;
+        case 'dictionary':
+            resultsDiv = document.getElementById('dict-results');
+            currentDictAttackId = null;
+            document.getElementById('stop-dict-btn').style.display = 'none';
+            break;
+        case 'mask':
+            resultsDiv = document.getElementById('mask-results');
+            currentMaskAttackId = null;
+            document.getElementById('stop-mask-btn').style.display = 'none';
+            break;
+        case 'rules':
+            resultsDiv = document.getElementById('rules-results');
+            currentRulesAttackId = null;
+            document.getElementById('stop-rules-btn').style.display = 'none';
+            break;
+        default:
+            resultsDiv = document.getElementById('dict-results');
     }
+    showError(resultsDiv, data.error || 'Attack error occurred');
 });
 
 function updateBruteProgress(data) {
     const progressFill = document.getElementById('brute-progress-fill');
     const progressText = document.getElementById('brute-progress-text');
-    
-    if (data.attempts) {
-        const progress = Math.min((data.attempts / 1000000) * 100, 100);
-        progressFill.style.width = progress + '%';
-        progressText.textContent = `Attempt ${data.attempts.toLocaleString()}: ${data.current || '...'}`;
+
+    if (data.progress !== undefined) {
+        progressFill.style.width = data.progress + '%';
+        progressText.textContent = `Testing: ${data.current || '...'} | ${data.attempts?.toLocaleString() || 0}/${data.total?.toLocaleString() || 0} | ${data.speed?.toLocaleString() || 0}/sec`;
     } else {
         progressText.textContent = data.message || 'Running...';
     }
@@ -536,10 +1159,34 @@ function updateBruteProgress(data) {
 function updateDictProgress(data) {
     const progressFill = document.getElementById('dict-progress-fill');
     const progressText = document.getElementById('dict-progress-text');
-    
+
     if (data.progress !== undefined) {
         progressFill.style.width = data.progress + '%';
         progressText.textContent = `Testing: ${data.current || '...'} (${data.attempts || 0}/${data.total || 0})`;
+    } else {
+        progressText.textContent = data.message || 'Running...';
+    }
+}
+
+function updateMaskProgress(data) {
+    const progressFill = document.getElementById('mask-progress-fill');
+    const progressText = document.getElementById('mask-progress-text');
+
+    if (data.progress !== undefined) {
+        progressFill.style.width = data.progress + '%';
+        progressText.textContent = `Testing: ${data.current || '...'} | ${data.attempts?.toLocaleString() || 0}/${data.total?.toLocaleString() || 0} | ${data.speed?.toLocaleString() || 0}/sec`;
+    } else {
+        progressText.textContent = data.message || 'Running...';
+    }
+}
+
+function updateRulesProgress(data) {
+    const progressFill = document.getElementById('rules-progress-fill');
+    const progressText = document.getElementById('rules-progress-text');
+
+    if (data.progress !== undefined) {
+        progressFill.style.width = data.progress + '%';
+        progressText.textContent = `Testing: ${data.current || '...'} | ${data.attempts?.toLocaleString() || 0}/${data.total?.toLocaleString() || 0}`;
     } else {
         progressText.textContent = data.message || 'Running...';
     }
@@ -639,6 +1286,66 @@ function showDictResults(data) {
     currentDictAttackId = null;
 }
 
+function showMaskResults(data) {
+    const resultsDiv = document.getElementById('mask-results');
+    const progressDiv = document.getElementById('mask-progress');
+
+    if (data.status === 'success') {
+        resultsDiv.innerHTML = `
+            <div class="result-item result-success">
+                <strong>Password Cracked!</strong><br>
+                Password: <code style="font-size: 1.2rem;">${data.password}</code><br>
+                Attempts: ${data.attempts.toLocaleString()}<br>
+                Time: ${data.time.toFixed(2)} seconds<br>
+                Speed: ${data.attempts_per_second.toLocaleString()} attempts/second
+            </div>
+        `;
+    } else {
+        resultsDiv.innerHTML = `
+            <div class="result-item result-error">
+                <strong>${data.message || 'Password not found'}</strong><br>
+                Attempts: ${data.attempts.toLocaleString()}<br>
+                Time: ${data.time.toFixed(2)} seconds<br>
+                The password did not match the given mask pattern.
+            </div>
+        `;
+    }
+
+    resultsDiv.classList.remove('hidden');
+    progressDiv.classList.add('hidden');
+    currentMaskAttackId = null;
+}
+
+function showRulesResults(data) {
+    const resultsDiv = document.getElementById('rules-results');
+    const progressDiv = document.getElementById('rules-progress');
+
+    if (data.status === 'success') {
+        resultsDiv.innerHTML = `
+            <div class="result-item result-success">
+                <strong>Password Cracked!</strong><br>
+                Password: <code style="font-size: 1.2rem;">${data.password}</code><br>
+                Attempts: ${data.attempts.toLocaleString()}<br>
+                Time: ${data.time.toFixed(2)} seconds<br>
+                Speed: ${data.attempts_per_second.toLocaleString()} attempts/second
+            </div>
+        `;
+    } else {
+        resultsDiv.innerHTML = `
+            <div class="result-item result-error">
+                <strong>${data.message || 'Password not found'}</strong><br>
+                Attempts: ${data.attempts.toLocaleString()}<br>
+                Time: ${data.time.toFixed(2)} seconds<br>
+                The password was not found with the given rules.
+            </div>
+        `;
+    }
+
+    resultsDiv.classList.remove('hidden');
+    progressDiv.classList.add('hidden');
+    currentRulesAttackId = null;
+}
+
 // Utility Functions
 function showError(container, message) {
     container.innerHTML = `
@@ -651,23 +1358,35 @@ function showError(container, message) {
 }
 
 // Enter key support
-document.getElementById('analyze-password').addEventListener('keypress', (e) => {
+document.getElementById('analyze-password')?.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') analyzePassword();
 });
 
-document.getElementById('hash-password').addEventListener('keypress', (e) => {
+document.getElementById('hash-password')?.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') generateHash();
 });
 
-document.getElementById('brute-password').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') startBruteForce();
-});
-
-document.getElementById('dict-hash').addEventListener('keypress', (e) => {
+document.getElementById('dict-hash')?.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') startDictionaryAttack();
 });
 
-document.getElementById('breach-password').addEventListener('keypress', (e) => {
+document.getElementById('breach-password')?.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') checkPasswordBreach();
+});
+
+document.getElementById('brute-hash')?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') startBruteForceAttack();
+});
+
+document.getElementById('mask-hash')?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') startMaskAttack();
+});
+
+document.getElementById('rainbow-hash')?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') lookupRainbowTable();
+});
+
+document.getElementById('rules-hash')?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') startRuleAttack();
 });
 
